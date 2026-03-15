@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      connection-init-sql: SET time_zone = '+09:00'
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+server:
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: true
+app:
+  security:
+    trust-forwarded-headers: true
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true

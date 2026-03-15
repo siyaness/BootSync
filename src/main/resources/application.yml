@@ -1,0 +1,89 @@
+spring:
+  application:
+    name: BootSync
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+  thymeleaf:
+    cache: false
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: ${APP_TIMEZONE:Asia/Seoul}
+server:
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        name: ${SESSION_COOKIE_NAME:BOOTSYNCSESSION}
+        http-only: true
+        same-site: lax
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+app:
+  timezone: ${APP_TIMEZONE:Asia/Seoul}
+  allowance:
+    daily-allowance-amount: 15800
+    payable-day-cap: 20
+  account-deletion:
+    purge-enabled: ${APP_ACCOUNT_DELETION_PURGE_ENABLED:false}
+    purge-cron: ${APP_ACCOUNT_DELETION_PURGE_CRON:0 15 3 * * *}
+    purge-run-once:
+      enabled: ${APP_ACCOUNT_DELETION_PURGE_RUN_ONCE_ENABLED:false}
+      actor: ${APP_ACCOUNT_DELETION_PURGE_RUN_ONCE_ACTOR:}
+      reason: ${APP_ACCOUNT_DELETION_PURGE_RUN_ONCE_REASON:}
+      close-context-after-run: ${APP_ACCOUNT_DELETION_PURGE_RUN_ONCE_CLOSE_CONTEXT_AFTER_RUN:true}
+  audit:
+    request-ip-hmac-secret: ${APP_AUDIT_REQUEST_IP_HMAC_SECRET:}
+    request-ip-hmac-retention-days: ${APP_AUDIT_REQUEST_IP_HMAC_RETENTION_DAYS:30}
+    request-ip-hmac-prune-enabled: ${APP_AUDIT_REQUEST_IP_HMAC_PRUNE_ENABLED:true}
+    request-ip-hmac-prune-cron: ${APP_AUDIT_REQUEST_IP_HMAC_PRUNE_CRON:0 25 3 * * *}
+  security:
+    trust-forwarded-headers: ${APP_SECURITY_TRUST_FORWARDED_HEADERS:false}
+  operations:
+    deletion-cancel:
+      enabled: ${APP_OPERATIONS_DELETION_CANCEL_ENABLED:false}
+      username: ${APP_OPERATIONS_DELETION_CANCEL_USERNAME:}
+      actor: ${APP_OPERATIONS_DELETION_CANCEL_ACTOR:}
+      reason: ${APP_OPERATIONS_DELETION_CANCEL_REASON:}
+      close-context-after-run: ${APP_OPERATIONS_DELETION_CANCEL_CLOSE_CONTEXT_AFTER_RUN:true}
+    password-reset:
+      enabled: ${APP_OPERATIONS_PASSWORD_RESET_ENABLED:false}
+      username: ${APP_OPERATIONS_PASSWORD_RESET_USERNAME:}
+      temporary-password: ${APP_OPERATIONS_PASSWORD_RESET_TEMPORARY_PASSWORD:}
+      temporary-password-file: ${APP_OPERATIONS_PASSWORD_RESET_TEMPORARY_PASSWORD_FILE:}
+      actor: ${APP_OPERATIONS_PASSWORD_RESET_ACTOR:}
+      reason: ${APP_OPERATIONS_PASSWORD_RESET_REASON:}
+      close-context-after-run: ${APP_OPERATIONS_PASSWORD_RESET_CLOSE_CONTEXT_AFTER_RUN:true}
+  recovery-email:
+    public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:8080}
+    from-address: ${APP_RECOVERY_EMAIL_FROM:no-reply@bootsync.local}
+    mail-enabled: ${APP_RECOVERY_EMAIL_MAIL_ENABLED:false}
+    development-preview-enabled: ${APP_RECOVERY_EMAIL_DEVELOPMENT_PREVIEW_ENABLED:false}
+  training:
+    course-start-date: 2025-09-23
+    course-end-date: 2026-03-27
+    attendance-threshold-percent: 80
+    holidays:
+      - 2025-10-03
+      - 2025-10-06
+      - 2025-10-07
+      - 2025-10-08
+      - 2025-10-09
+      - 2025-10-10
+      - 2025-12-25
+      - 2025-12-26
+      - 2026-01-01
+      - 2026-01-02
+      - 2026-02-16
+      - 2026-02-17
+      - 2026-02-18
+      - 2026-03-02

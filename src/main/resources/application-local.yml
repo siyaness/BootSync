@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/bootsync?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:bootsync}
+    password: ${DB_PASSWORD:bootsync}
+    hikari:
+      connection-init-sql: SET time_zone = '+09:00'
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+  security:
+    user:
+      name: ${BOOTSYNC_DEMO_USERNAME:d}
+      password: ${BOOTSYNC_DEMO_PASSWORD:d}
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+logging:
+  level:
+    org.springframework.security: INFO
+app:
+  recovery-email:
+    mail-enabled: false
+    development-preview-enabled: true

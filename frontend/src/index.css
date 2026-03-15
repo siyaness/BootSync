@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 14% 96%;
+    --foreground: 213 33% 17%;
+
+    --card: 40 10% 99%;
+    --card-foreground: 213 33% 17%;
+
+    --popover: 40 10% 99%;
+    --popover-foreground: 213 33% 17%;
+
+    --primary: 192 39% 39%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 60 8% 93%;
+    --secondary-foreground: 213 33% 17%;
+
+    --muted: 60 8% 93%;
+    --muted-foreground: 213 14% 44%;
+
+    --accent: 192 39% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 42%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 60 6% 88%;
+    --input: 60 6% 88%;
+    --ring: 192 39% 39%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 40 14% 96%;
+    --sidebar-foreground: 213 33% 17%;
+    --sidebar-primary: 192 39% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 60 8% 93%;
+    --sidebar-accent-foreground: 213 33% 17%;
+    --sidebar-border: 60 6% 88%;
+    --sidebar-ring: 192 39% 39%;
+  }
+
+  html {
+    scrollbar-gutter: stable;
+    overflow-y: scroll;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    min-height: 100vh;
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .font-mono-code {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}

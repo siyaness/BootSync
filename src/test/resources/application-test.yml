@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:bootsync-${random.uuid};MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+  mail:
+    host: localhost
+    port: 1025
+  security:
+    user:
+      name: d
+      password: d
+app:
+  timezone: Asia/Seoul
+  recovery-email:
+    public-base-url: http://localhost:8080
+    mail-enabled: false
+    development-preview-enabled: true

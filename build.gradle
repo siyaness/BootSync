@@ -1,0 +1,79 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.3'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.bootsync'
+version = '0.0.1-SNAPSHOT'
+description = 'BootSync service application'
+
+def frontendDistDir = layout.projectDirectory.dir('frontend/dist')
+def generatedFrontendResourcesDir = layout.buildDirectory.dir('generated-resources/frontend')
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+sourceSets {
+	main {
+		resources {
+			srcDir(generatedFrontendResourcesDir)
+		}
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.flywaydb:flyway-mysql'
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+	implementation 'org.commonmark:commonmark:0.22.0'
+	implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20240325.1'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'com.h2database:h2'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+	systemProperty 'spring.profiles.active', 'test'
+}
+
+tasks.register('syncFrontendDist', Sync) {
+	group = 'frontend'
+	description = 'Copies built frontend assets into generated Spring resources.'
+	from(frontendDistDir)
+	into(generatedFrontendResourcesDir.map { it.dir('static/app') })
+	onlyIf {
+		frontendDistDir.asFile.exists() && (frontendDistDir.asFile.listFiles()?.length ?: 0) > 0
+	}
+}
+
+tasks.named('processResources') {
+	dependsOn tasks.named('syncFrontendDist')
+}
+
+tasks.register('bootRunTestProfile', org.springframework.boot.gradle.tasks.run.BootRun) {
+	group = 'application'
+	description = 'Runs the app with the test profile using the test runtime classpath.'
+	dependsOn testClasses
+	dependsOn processResources
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass.set('com.bootsync.BootSyncApplication')
+	systemProperty 'spring.profiles.active', 'test'
+}
