@@ -207,7 +207,9 @@ export default function AttendancePage() {
   const desktopContentWidthClass = !isMobile ? 'max-w-[960px]' : '';
   const desktopRowAlignmentClass = !isMobile ? 'items-start' : '';
   const desktopCalendarCardClass = !isMobile ? 'self-start' : '';
-  const desktopDetailPanelClass = !isMobile ? 'self-start min-h-[620px]' : '';
+  const desktopDetailPanelClass = !isMobile
+    ? (selectedDate ? 'self-start min-h-[620px]' : 'self-start min-h-[360px]')
+    : '';
   const currentYearMonth = formatYearMonth(currentYear, currentMonth);
   const defaultYearMonth = formatYearMonth(todayYear, todayMonth);
 
@@ -641,60 +643,45 @@ export default function AttendancePage() {
   );
 
   const summaryStrip = (
-    <div className="bg-[#FDFCFB] rounded-xl border border-[#E2E4DF] shadow-[0_1px_3px_rgba(30,42,58,0.06)] p-3.5">
-      <div className="space-y-3">
-        <div>
-          <div className="flex items-center justify-between gap-3 mb-2.5">
+    <div className="bg-[#FDFCFB] rounded-xl border border-[#E2E4DF] shadow-[0_1px_3px_rgba(30,42,58,0.06)] p-4">
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-start">
+        <div className="space-y-2.5 md:pr-4 md:border-r md:border-[#E2E4DF]">
+          <div className="flex items-center justify-between gap-3">
             <h3 className="text-[14px] font-semibold text-[#1E2A3A]">전체 누적</h3>
-            <span className="text-[11px] text-[#8A9BB0]">
-              {overallSummaryLabel}
-            </span>
+            <span className="text-[11px] text-[#8A9BB0]">{overallSummaryLabel}</span>
           </div>
-          {trainingSummary ? (
-            <div className="space-y-2.5 min-h-[154px]">
-              {renderSummaryTiles([
-                { key: 'overall-completed', label: '수업일', value: trainingSummary.courseCompletedDays, color: '#3D7A8A', bg: '#E8F4F6' },
-                { key: 'overall-effective-present', label: '출석', value: trainingSummary.effectivePresentDays, color: '#2E7D5E', bg: '#D1FAE5' },
-                { key: 'overall-effective-absence', label: '결석', value: trainingSummary.effectiveAbsenceCount, color: '#B91C1C', bg: '#FEE2E2' },
-                {
-                  key: 'overall-rate',
-                  label: '출석률',
-                  value: officialAttendanceRate === null ? '-' : formatPercent(officialAttendanceRate),
-                  color: '#3D7A8A',
-                  bg: '#E8F4F6',
-                },
-              ])}
-              <div className="rounded-lg bg-[#F7F6F3] border border-[#E2E4DF] px-3 py-2 text-[11px] text-[#8A9BB0] leading-[1.45] space-y-1">
-                <p>수업일은 지금까지 실제로 진행된 전체 수업일입니다.</p>
-                <p>입력한 기록: 출석 {trainingSummary.presentCount} · 지각 {trainingSummary.lateCount} · 조퇴 {trainingSummary.leaveEarlyCount} · 결석 {trainingSummary.absentCount}</p>
-                <p>지각/조퇴 3회는 결석 1일로 계산합니다.</p>
-                {trainingSummary.unrecordedCompletedDays > 0 && (
-                  <p>아직 입력하지 않은 수업일 {trainingSummary.unrecordedCompletedDays}일은 공식 출석일 계산에서 제외됩니다.</p>
-                )}
-              </div>
-            </div>
-          ) : trainingProfile?.configured ? (
-            <div className="space-y-2.5 min-h-[154px]">
-              {renderSummaryTiles([
-                { key: 'overall-loading-completed', label: '수업일', value: '-', color: '#4A5568', bg: '#EFF0EC' },
-                { key: 'overall-loading-present', label: '출석', value: '-', color: '#4A5568', bg: '#EFF0EC' },
-                { key: 'overall-loading-absence', label: '결석', value: '-', color: '#4A5568', bg: '#EFF0EC' },
-                { key: 'overall-loading-rate', label: '출석률', value: '-', color: '#4A5568', bg: '#EFF0EC' },
-              ])}
-              <div className="rounded-lg bg-[#F7F6F3] border border-[#E2E4DF] px-3 py-2 text-[11px] text-[#8A9BB0] leading-[1.45] min-h-[72px] flex flex-col justify-center">
-                <p>전체 누적 출결을 불러오는 중입니다.</p>
-                <p>잠시 후 이번 달 기록과 함께 표시됩니다.</p>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg bg-[#F7F6F3] border border-[#E2E4DF] px-3 py-2 text-[11px] text-[#8A9BB0] leading-[1.45]">
-              과정 현황에서 내 과정 정보를 저장하면 전체 누적 출결도 함께 보여 줍니다.
-            </div>
+          {renderSummaryTiles(
+            trainingSummary
+              ? [
+                  { key: 'overall-completed', label: '수업일', value: trainingSummary.courseCompletedDays, color: '#3D7A8A', bg: '#E8F4F6' },
+                  { key: 'overall-effective-present', label: '출석', value: trainingSummary.effectivePresentDays, color: '#2E7D5E', bg: '#D1FAE5' },
+                  { key: 'overall-effective-absence', label: '결석', value: trainingSummary.effectiveAbsenceCount, color: '#B91C1C', bg: '#FEE2E2' },
+                  {
+                    key: 'overall-rate',
+                    label: '출석률',
+                    value: officialAttendanceRate === null ? '-' : formatPercent(officialAttendanceRate),
+                    color: '#3D7A8A',
+                    bg: '#E8F4F6',
+                  },
+                ]
+              : [
+                  { key: 'overall-loading-completed', label: '수업일', value: '-', color: '#4A5568', bg: '#EFF0EC' },
+                  { key: 'overall-loading-present', label: '출석', value: '-', color: '#4A5568', bg: '#EFF0EC' },
+                  { key: 'overall-loading-absence', label: '결석', value: '-', color: '#4A5568', bg: '#EFF0EC' },
+                  { key: 'overall-loading-rate', label: '출석률', value: '-', color: '#4A5568', bg: '#EFF0EC' },
+                ]
           )}
+          <p className="text-[11px] leading-[1.45] text-[#8A9BB0] min-h-[32px]">
+            {trainingSummary
+              ? '지금까지 실제로 진행된 수업일 기준입니다.'
+              : trainingProfile?.configured
+                ? '전체 누적 출결을 불러오는 중입니다.'
+                : '과정 현황에서 내 과정 정보를 저장하면 함께 표시됩니다.'}
+          </p>
         </div>
 
-        <div className="pt-3 border-t border-[#E2E4DF] min-h-[112px]">
-          <div className="flex items-center justify-between gap-3 mb-2.5">
+        <div className="space-y-2.5 md:pl-1">
+          <div className="flex items-center justify-between gap-3">
             <h3 className="text-[14px] font-semibold text-[#1E2A3A]">{currentMonth + 1}월 요약</h3>
             <span className="text-[11px] text-[#8A9BB0]">이번 달 누적</span>
           </div>
@@ -713,6 +700,9 @@ export default function AttendancePage() {
                   { key: 'month-loading-absent', label: '결석', value: '-', color: '#4A5568', bg: '#EFF0EC' },
                 ]
           )}
+          <p className="text-[11px] leading-[1.45] text-[#8A9BB0] min-h-[32px]">
+            월 이동 후에도 이 달의 출결 누적을 바로 확인할 수 있습니다.
+          </p>
         </div>
       </div>
     </div>
@@ -945,7 +935,7 @@ export default function AttendancePage() {
       desktopDetailPanelClass
       )}
     >
-      <div className="flex flex-col h-full">
+      <div className="space-y-5">
         <div>
           <p className="text-[12px] font-semibold uppercase tracking-wider text-[#8A9BB0]">빠른 수정 패널</p>
           <h3 className="text-[20px] font-bold text-[#1E2A3A] mt-1">날짜를 선택해 바로 입력하세요</h3>
@@ -973,45 +963,9 @@ export default function AttendancePage() {
               기록 삭제
             </div>
           </div>
-        </div>
-
-        <div className="min-h-[52px] mt-4" />
-
-        <div className="space-y-4 mt-auto">
-          <div>
-            <p className="text-sm font-medium text-[#1E2A3A] mb-2.5">빠른 상태 입력</p>
-            <div className="grid grid-cols-2 gap-2">
-              {STATUS_OPTIONS.map(option => (
-                <div
-                  key={`preview-${option.value}`}
-                  className="rounded-xl border-2 border-[#E2E4DF] bg-[#FDFCFB] px-3.5 py-3 opacity-60"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: option.bg }}>
-                      <option.icon className="w-4.5 h-4.5" style={{ color: option.color }} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[#1E2A3A]">{option.label}</p>
-                      <p className="text-[10px] leading-none tracking-tight text-[#8A9BB0] whitespace-nowrap">바로 저장</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#1E2A3A]">메모</label>
-            <div className="w-full h-24 rounded-lg bg-[#EFF0EC] border border-[#E2E4DF]" />
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] text-[#8A9BB0]">상태를 선택하면 메모 입력이 활성화됩니다.</p>
-              <p className="text-[11px] text-[#8A9BB0]">0/200</p>
-            </div>
-            <div className="w-full h-10 rounded-lg border border-[#E2E4DF] bg-[#F7F6F3] text-[#8A9BB0] text-sm font-medium flex items-center justify-center gap-2">
-              <Save className="w-4 h-4" />
-              메모 저장
-            </div>
-          </div>
+          <p className="text-[12px] text-[#8A9BB0] mt-3 leading-[1.45]">
+            날짜를 선택하면 이 자리에서 빠른 상태 입력과 메모 저장이 함께 열립니다.
+          </p>
         </div>
       </div>
     </div>
@@ -1020,6 +974,8 @@ export default function AttendancePage() {
   return (
     <div className={cn('space-y-5 pb-4', desktopContentWidthClass)} style={{ overflowAnchor: 'none' }}>
       <h1 className="text-[22px] font-bold text-[#1E2A3A]">출결 관리</h1>
+
+      {summaryStrip}
 
       <div className={cn('grid gap-5', desktopTwoColumnLayoutClass, desktopRowAlignmentClass)}>
         <div className={cn(
@@ -1109,8 +1065,7 @@ export default function AttendancePage() {
           </div>
         </div>
 
-        <div className={cn('space-y-5', desktopCalendarCardClass, isMobile && 'mt-5')}>
-          {summaryStrip}
+        <div className={cn(desktopCalendarCardClass, isMobile && 'mt-5')}>
           {detailPanel}
         </div>
       </div>

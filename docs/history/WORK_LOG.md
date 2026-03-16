@@ -367,3 +367,34 @@
 - 화면은 이제 프론트에서 별도 재계산하지 않고, 백엔드 `TrainingSummaryService`가 내려주는 `attendanceRatePercent`를 그대로 사용해 현재까지 기준 출석률과 일치하게 맞췄다.
 - 출석률이 정확히 `100`일 때는 `100.0%` 대신 `100%`로 보이도록 표기 함수를 한 번 더 다듬었다.
 - 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build` 통과를 기준으로 한다.
+
+## 44. README 역할 구분을 명확하게 정리
+
+- 루트 [README.md](/C:/B_Recheck/README.md)에 `README 안내` 표를 추가해, 처음 보는 사람도 `프로젝트 전체 안내 / 문서 허브 / Kubernetes 안내` 중 어디를 봐야 하는지 바로 알 수 있게 정리했다.
+- [docs/README.md](/C:/B_Recheck/docs/README.md)에는 `어떤 README를 먼저 볼까` 표를 추가해, 세부 문서 허브와 루트 README, `k8s/README.md`의 역할 차이를 분명히 적었다.
+- [k8s/README.md](/C:/B_Recheck/k8s/README.md) 상단에도 이 문서가 `Kubernetes 전용 안내`라는 설명을 넣어, 로컬 실행 안내와 섞어 읽지 않도록 정리했다.
+- 이번 변경은 문서 구조 안내만 다룬 작업이라 별도 빌드/테스트는 실행하지 않았다.
+
+## 45. 과정 현황 출석률 표현과 운영 범위 문구를 현재 구조에 맞춤
+
+- `과정 현황` 화면의 출석률 값은 이미 `현재까지 진행된 수업일` 기준으로 계산되고 있었지만, 화면 라벨이 `전체 과정 출석률`처럼 읽혀 혼동을 줄 수 있어 `현재까지 출석률`로 바꾸고 보조 문구에도 계산 기준을 명시했다.
+- 루트 [README.md](/C:/B_Recheck/README.md)와 [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)도 같은 의미로 표현을 맞춰, 현재 화면과 문서 설명이 어긋나지 않게 정리했다.
+- [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md)의 `v1 제외 기능`에는 Kubernetes를 `제품 기능의 필수 출시 범위는 아님`으로 풀어 쓰고, 대신 `AWS 배포` 준비 과정에서 운영용 매니페스트와 모니터링 템플릿을 저장소에 둘 수 있다는 설명을 추가했다.
+- `member_training_profile`의 구 장려금 컬럼을 제거하는 [V4__drop_legacy_training_profile_allowance_columns.sql](/C:/B_Recheck/src/main/resources/db/migration/V4__drop_legacy_training_profile_allowance_columns.sql)에 정리 목적 주석을 추가해, 새 모델로 전환된 뒤 남은 스키마 정리 단계임을 바로 알 수 있게 했다.
+- 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat compileJava compileTestJava` 통과를 기준으로 한다.
+
+## 46. 출결 관리 상단 요약 바와 빠른 입력 동선을 재배치
+
+- `전체 누적`과 `이번 달 요약`을 오른쪽 세로 카드에서 분리해, 화면 상단의 얇은 가로 요약 바로 옮겼다.
+- 상단 카드 안에서는 두 요약을 좌우 2구역으로 나눠 한 번에 훑을 수 있게 하고, 긴 안내 박스는 줄여 카드 높이가 과도하게 커지지 않도록 정리했다.
+- 오른쪽 영역은 요약 카드 대신 `빠른 수정 패널`만 남겨, 데스크톱에서 `요약 확인 -> 날짜 선택 -> 바로 상태 입력` 흐름이 더 짧아지도록 맞췄다.
+- 루트 [README.md](/C:/B_Recheck/README.md)의 출결 관리 설명도 새 레이아웃에 맞게 상단 요약 바 중심으로 갱신했다.
+- 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat compileJava compileTestJava` 통과를 기준으로 한다.
+
+## 47. 비선택 상태 빠른 수정 패널을 안내형으로 축소
+
+- 출결 관리 화면에 처음 들어왔을 때는 날짜를 아직 고르지 않았는데도 `빠른 상태 입력`과 `메모`가 비활성화된 채 길게 보여, 첫 화면 밀도가 떨어지고 불필요한 빈 공간이 커 보였다.
+- 비선택 상태 패널은 이제 `빠른 수정 패널` 설명과 `선택 전 미리보기`만 남기고, 실제 `빠른 상태 입력`과 `메모 저장` 영역은 날짜를 선택했을 때만 열리도록 바꿨다.
+- 데스크톱에서는 비선택 상태 패널 최소 높이도 함께 낮춰, 처음 진입했을 때 오른쪽 패널이 과하게 길어 보이지 않도록 정리했다.
+- 루트 [README.md](/C:/B_Recheck/README.md)에도 날짜 선택 전에는 설명만 보인다는 현재 동작을 반영했다.
+- 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat compileJava compileTestJava` 통과를 기준으로 한다.

@@ -402,13 +402,13 @@ export default function CourseStatusPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-[#E8F4F6] px-3.5 py-3.5">
-              <p className="text-[11px] text-[#5C7B86]">전체 과정 출석률</p>
+              <p className="text-[11px] text-[#5C7B86]">현재까지 출석률</p>
               <p className="text-lg font-semibold text-[#1E2A3A] mt-1">
                 {trainingSummary ? `${trainingSummary.attendanceRatePercent}%` : '미설정'}
               </p>
               <p className="text-[11px] text-[#5C7B86] mt-1">
                 {trainingSummary
-                  ? `수료 기준 ${trainingSummary.thresholdPercent}%와 비교`
+                  ? `지금까지 진행된 수업일 기준, 수료 기준 ${trainingSummary.thresholdPercent}%와 비교`
                   : '과정 정보를 저장하면 계산됩니다.'}
               </p>
             </div>
