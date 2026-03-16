@@ -27,7 +27,8 @@ public class ActiveMemberSessionFilter extends OncePerRequestFilter {
         "/signup",
         "/auth/login",
         "/auth/recovery-email/verify",
-        "/actuator/health"
+        "/actuator/health",
+        "/actuator/prometheus"
     );
 
     private final MemberRepository memberRepository;
@@ -75,6 +76,7 @@ public class ActiveMemberSessionFilter extends OncePerRequestFilter {
     private boolean isPublicRequest(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
         return PUBLIC_PATHS.contains(requestUri)
+            || requestUri.startsWith("/actuator/health")
             || requestUri.startsWith("/css/")
             || requestUri.startsWith("/js/")
             || requestUri.startsWith("/images/")

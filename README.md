@@ -8,7 +8,7 @@ BootSync는 Spring Boot 3.x 백엔드와 React `/app` 프론트를 함께 사용
 운영 환경변수 체크리스트는 [PROD_ENV_CHECKLIST.md](/C:/B_Recheck/docs/operations/PROD_ENV_CHECKLIST.md)에서 확인할 수 있습니다.
 운영 증적 템플릿은 [OPERATIONS_EVIDENCE_TEMPLATES.md](/C:/B_Recheck/docs/operations/OPERATIONS_EVIDENCE_TEMPLATES.md)에서 확인할 수 있습니다.
 정책 문서 초안은 [PRIVACY_POLICY_DRAFT.md](/C:/B_Recheck/docs/policies/PRIVACY_POLICY_DRAFT.md), [TERMS_OF_SERVICE_DRAFT.md](/C:/B_Recheck/docs/policies/TERMS_OF_SERVICE_DRAFT.md), [ACCOUNT_DELETION_AND_RECOVERY_POLICY.md](/C:/B_Recheck/docs/policies/ACCOUNT_DELETION_AND_RECOVERY_POLICY.md)에서 확인할 수 있습니다.
-최근 작업 기록은 [WORK_LOG.md](/C:/B_Recheck/docs/history/WORK_LOG.md)에서 확인할 수 있습니다.
+작업 이력은 [WORK_LOG.md](/C:/B_Recheck/docs/history/WORK_LOG.md)에서 확인할 수 있습니다.
 최근 운영 rehearsal 기록은 [2026-03-15-ops-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-ops-rehearsal.md)에서 확인할 수 있습니다.
 최근 백업/복원 rehearsal 기록은 [2026-03-15-backup-restore-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)에서 확인할 수 있습니다.
 운영 점검 절차는 [OPERATIONS_RUNBOOK.md](/C:/B_Recheck/docs/operations/OPERATIONS_RUNBOOK.md)에서 확인할 수 있습니다.
@@ -112,9 +112,10 @@ cd ..
 - Gradle은 `frontend/dist` 가 있으면 빌드 산출물만 `build/generated-resources/frontend/static/app` 으로 복사해 사용합니다.
 - `frontend/dist` 가 아직 없으면 `/app` 라우트는 프론트 빌드 안내 화면을 보여줍니다.
 - Dockerfile도 이미지 빌드 중 `frontend`를 자동 빌드해 같은 경로로 포함합니다.
-- Kubernetes 초안 매니페스트는 [k8s](/C:/B_Recheck/k8s) 폴더에 추가돼 있어 `EC2 + k3s` 또는 유사한 환경에서 바로 배포 준비를 시작할 수 있습니다.
+- Kubernetes 매니페스트는 [k8s](/C:/B_Recheck/k8s) 아래 `k8s-bootsync`, `k8s-monitoring`, `k8s-argocd` 구조로 정리돼 있어 앱 배포, Prometheus/Grafana, Argo CD 템플릿을 분리해서 사용할 수 있습니다.
 - 단독 Docker 이미지([Dockerfile](/C:/B_Recheck/Dockerfile))는 배포 실수를 줄이기 위해 기본 `SPRING_PROFILES_ACTIVE=prod`로 시작하고, final stage는 non-root 사용자 `bootsync`로 실행합니다.
-- 따라서 이미지를 `docker run`으로 직접 사용할 때는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`와 운영 메일/도메인 설정을 함께 넘기는 것을 전제로 합니다.
+- 따라서 이미지를 `docker run`으로 직접 사용할 때는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`와 운영 메일/도메인 설정, 필요 시 `APP_MONITORING_PROMETHEUS_SCRAPE_TOKEN`까지 함께 넘기는 것을 전제로 합니다.
+- 앱의 `/actuator/prometheus`는 이제 Bearer 토큰이 있어야 응답하며, Kubernetes 예시는 내부 Prometheus가 같은 토큰으로 스크랩하고 외부 Ingress에서는 `/actuator` 경로를 막는 방향으로 작성돼 있습니다.
 - 현재 `/app` 프론트는 세션 확인, 로그인, 회원가입, 출결 조회/수정/삭제, 스니펫 조회/작성/수정/삭제, 설정의 표시 이름/비밀번호/복구 이메일 변경 요청/재발송/계정 삭제 요청까지 실제 백엔드 API를 사용합니다.
 - `/app` 프론트의 실제 화면 코드는 더 이상 `mock-data` 모듈에 의존하지 않고, 공용 타입/표시 유틸과 fixture 데이터를 분리해 사용합니다.
 - `/app` 출결 관리의 월 카운트는 서버 `monthlySummary` 응답을 사용하고, 대시보드/과정 현황/훈련장려금 화면의 금액 계산은 현재 단위기간 기준 `allowanceSummary` 응답을 사용합니다.

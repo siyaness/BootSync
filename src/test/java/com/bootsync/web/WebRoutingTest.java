@@ -139,6 +139,31 @@ class WebRoutingTest {
     }
 
     @Test
+    void prometheusEndpointRejectsAnonymousScrape() throws Exception {
+        mockMvc.perform(get("/actuator/prometheus"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void prometheusEndpointAcceptsConfiguredBearerToken() throws Exception {
+        mockMvc.perform(get("/actuator/prometheus")
+                .header("Authorization", "Bearer test-prometheus-token"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("jvm_memory_used_bytes")));
+    }
+
+    @Test
+    void actuatorHealthProbeEndpointsArePublic() throws Exception {
+        mockMvc.perform(get("/actuator/health/readiness"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("\"status\":\"UP\"")));
+
+        mockMvc.perform(get("/actuator/health/liveness"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("\"status\":\"UP\"")));
+    }
+
+    @Test
     void apiLoginCreatesSessionAndApiSessionReturnsCurrentUser() throws Exception {
         MockHttpSession session = new MockHttpSession();
 

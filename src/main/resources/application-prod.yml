@@ -24,8 +24,5 @@ server:
 app:
   security:
     trust-forwarded-headers: true
-management:
-  endpoint:
-    health:
-      probes:
-        enabled: true
+  monitoring:
+    prometheus-scrape-token: ${APP_MONITORING_PROMETHEUS_SCRAPE_TOKEN}

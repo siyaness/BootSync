@@ -21,6 +21,7 @@ public class AppProperties {
     private final AccountDeletion accountDeletion = new AccountDeletion();
     private final Audit audit = new Audit();
     private final Security security = new Security();
+    private final Monitoring monitoring = new Monitoring();
     private final Operations operations = new Operations();
     private final RecoveryEmail recoveryEmail = new RecoveryEmail();
     private final Training training = new Training();
@@ -47,6 +48,10 @@ public class AppProperties {
 
     public Security getSecurity() {
         return security;
+    }
+
+    public Monitoring getMonitoring() {
+        return monitoring;
     }
 
     public Operations getOperations() {
@@ -100,6 +105,20 @@ public class AppProperties {
 
         public void setTrustForwardedHeaders(boolean trustForwardedHeaders) {
             this.trustForwardedHeaders = trustForwardedHeaders;
+        }
+    }
+
+    public static class Monitoring {
+
+        @NotBlank
+        private String prometheusScrapeToken = "";
+
+        public String getPrometheusScrapeToken() {
+            return prometheusScrapeToken;
+        }
+
+        public void setPrometheusScrapeToken(String prometheusScrapeToken) {
+            this.prometheusScrapeToken = prometheusScrapeToken;
         }
     }
 

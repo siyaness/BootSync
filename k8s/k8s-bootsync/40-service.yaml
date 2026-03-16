@@ -3,9 +3,12 @@ kind: Service
 metadata:
   name: bootsync-service
   namespace: bootsync
+  labels:
+    app.kubernetes.io/name: bootsync-app
+    app.kubernetes.io/part-of: bootsync
 spec:
   selector:
-    app: bootsync-app
+    app.kubernetes.io/name: bootsync-app
   ports:
     - name: http
       port: 80

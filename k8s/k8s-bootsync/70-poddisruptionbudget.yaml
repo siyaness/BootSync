@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bootsync-app
+  namespace: bootsync
+  labels:
+    app.kubernetes.io/name: bootsync-app
+    app.kubernetes.io/part-of: bootsync
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bootsync-app

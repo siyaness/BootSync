@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bootsync-actuator-service
+  namespace: bootsync
+  labels:
+    app.kubernetes.io/name: bootsync-app
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: bootsync
+spec:
+  selector:
+    app.kubernetes.io/name: bootsync-app
+  ports:
+    - name: http-management
+      port: 8080
+      targetPort: http
+  type: ClusterIP

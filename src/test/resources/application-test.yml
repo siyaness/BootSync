@@ -18,6 +18,8 @@ spring:
       password: d
 app:
   timezone: Asia/Seoul
+  monitoring:
+    prometheus-scrape-token: test-prometheus-token
   recovery-email:
     public-base-url: http://localhost:8080
     mail-enabled: false

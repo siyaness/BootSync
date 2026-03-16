@@ -166,28 +166,47 @@ DB 내용을 dump 파일로 만들어 S3에 저장하는 것이다.
 
 ## 8. Kubernetes 매니페스트 구조
 
-처음에는 아래 정도면 충분하다.
+지금 레포 기준으로는 아래처럼 역할별 폴더로 나눠 두는 편이 더 관리하기 좋다.
 
 ```text
 k8s/
-  00-namespace.yaml
-  01-configmap.yaml
-  02-secret.example.yaml
-  03-deployment.yaml
-  04-service.yaml
-  05-ingress.yaml
-  06-cronjob-backup.yaml
+  k8s-bootsync/
+    00-namespace.yaml
+    10-configmap.yaml
+    20-secret.example.yaml
+    30-deployment.yaml
+    40-service.yaml
+    41-actuator-service.yaml
+    50-ingress.yaml
+    55-certificate.yaml
+    60-hpa.yaml
+    70-poddisruptionbudget.yaml
+  k8s-monitoring/
+    00-namespace.yaml
+    prometheus-scrape-secret.example.yaml
+    prometheus-config.yaml
+    prometheus-rbac.yaml
+    prometheus-depl_svc.yaml
+    node-exporter.yaml
+    grafana-secret.example.yaml
+    grafana-depl_svc.yaml
+  k8s-argocd/
+    argocd-application.yaml
+    argocd-service.yaml
+    argocd-ingress.yaml
+    https.yaml
 ```
 
 파일 설명:
 
-- `00-namespace.yaml`: BootSync 전용 namespace
-- `01-configmap.yaml`: 비민감 설정값
-- `02-secret.example.yaml`: 비밀번호/토큰 등의 예시 구조
-- `03-deployment.yaml`: 앱 컨테이너 배포 정의
-- `04-service.yaml`: 클러스터 내부 네트워크 연결
-- `05-ingress.yaml`: 외부 HTTP/HTTPS 진입점
-- `06-cronjob-backup.yaml`: S3 백업 잡을 Kubernetes CronJob으로 돌릴 때 사용
+- `k8s-bootsync`: 앱 본체, Ingress, TLS, HPA
+- `k8s-monitoring`: Prometheus, Grafana, node-exporter
+- `k8s-argocd`: GitOps 적용 예시
+- `41-actuator-service.yaml`: Prometheus가 내부에서 `/actuator/prometheus`를 스크랩할 때 쓰는 별도 Service
+- `prometheus-scrape-secret.example.yaml`: Prometheus가 BootSync scrape용 Bearer 토큰을 읽는 Secret 템플릿
+- `50-ingress.yaml`: 사용자 트래픽은 열고 `/actuator`는 외부에서 막는 방향의 예시
+- `55-certificate.yaml`, `https.yaml`: cert-manager가 있을 때 붙이는 TLS 예시
+- Prometheus scrape 토큰은 `k8s-bootsync/20-secret.yaml`의 `APP_MONITORING_PROMETHEUS_SCRAPE_TOKEN`과 같은 값으로 맞춘다
 
 처음부터 필요한 최소 세트:
 
@@ -197,7 +216,7 @@ k8s/
 - ingress
 - secret/configmap
 
-CronJob은 앱이 뜬 뒤 추가해도 된다.
+모니터링, HPA, Argo CD는 앱이 뜬 뒤 추가해도 된다.
 
 ## 9. Terraform 우선순위
 
@@ -301,10 +320,10 @@ Terraform을 지금 모르는 상태라면 아래 순서로 접근한다.
 
 해야 할 일:
 
-- `k8s/` 폴더 생성
-- deployment/service/ingress 작성
+- `k8s/k8s-bootsync` 기준으로 deployment/service/ingress 작성
 - ECR 이미지 사용
 - secret/configmap 주입
+- 필요하면 `k8s/k8s-monitoring`, `k8s/k8s-argocd`까지 확장
 - 앱 접속 확인
 
 완료 기준:

@@ -330,7 +330,7 @@
 ## 39. 전체 비교 검증과 문서 정합화 기록
 
 - 2026-03-16 기준으로 [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md), [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md), [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md), [README.md](/C:/B_Recheck/README.md), [final-checkpoint.md](/C:/B_Recheck/docs/reports/checkpoints/final-checkpoint.md)를 다시 읽고 현재 코드/문서 상태를 대조했다.
-- 이 환경에는 `git` 명령이 없어 diff 기반 비교 대신 문서 대 코드 스냅샷 비교 방식으로 검증했다.
+- 이 환경에서는 `git` 명령과 문서 대 코드 스냅샷 비교를 함께 사용해 검증했다.
 - 자동 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat test` 전체 통과로 확인했다.
 - 비교 과정에서 [README.md](/C:/B_Recheck/README.md)에 남아 있던 예전 `오늘 출결` 설명과 `실시일수` 표현을 현재 캘린더 중심 출결 관리 구조와 `수업일` 표현으로 맞춰 정리했다.
 - 문서 허브와 공유용 문서가 최신 상태를 바로 가리키도록 [docs/README.md](/C:/B_Recheck/docs/README.md)와 [2026-03-14-release-note.md](/C:/B_Recheck/docs/reports/releases/2026-03-14-release-note.md)에 새 검증 체크포인트 링크를 추가했다.
@@ -341,3 +341,29 @@
 - 실제 운영 증적을 바로 남길 수 있도록 [OPERATIONS_EVIDENCE_TEMPLATES.md](/C:/B_Recheck/docs/operations/OPERATIONS_EVIDENCE_TEMPLATES.md)에 SMTP 실메일, purge 첫 실행, S3 업로드, prod-like 복원/RTO 템플릿을 추가했다.
 - AWS 배포 리스크를 `문서만 있음` 단계에서 더 나아가게 하기 위해 [k8s](/C:/B_Recheck/k8s) 폴더에 namespace, configmap, secret example, deployment, service, ingress 초안 매니페스트를 추가했다.
 - [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md), [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md), [README.md](/C:/B_Recheck/README.md), [docs/README.md](/C:/B_Recheck/docs/README.md)에 현재 상태를 반영해 정책 문서는 초안 준비 완료, AWS 배포는 문서/매니페스트 준비 후 실제 실행 대기 상태로 정리했다.
+
+## 41. 모니터링 접근 제어와 문서 기준을 현재 상태로 재정렬
+
+- `/actuator/prometheus`가 익명 공개돼 있던 상태는 명세의 내부 접근 원칙과 맞지 않아, 이제는 Bearer 토큰이 있을 때만 응답하도록 앱 보안 필터를 추가했다.
+- `application-local.yml`, `application-test.yml`, `application-prod.yml`에 Prometheus scrape 토큰 구성을 명시했고, 테스트도 `무토큰 401 / 올바른 토큰 200` 기준으로 바꿨다.
+- `k8s/k8s-bootsync/20-secret.example.yaml`에는 앱용 `APP_MONITORING_PROMETHEUS_SCRAPE_TOKEN`을, `k8s/k8s-monitoring/prometheus-scrape-secret.example.yaml`에는 Prometheus 쪽 동일 토큰 템플릿을 추가했다.
+- `k8s/k8s-monitoring/prometheus-config.yaml`과 `prometheus-depl_svc.yaml`은 이 토큰을 `Authorization: Bearer ...`로 붙여 BootSync 앱을 스크랩하도록 갱신했다.
+- [2026-03-16-validation-checkpoint.md](/C:/B_Recheck/docs/reports/checkpoints/2026-03-16-validation-checkpoint.md), [README.md](/C:/B_Recheck/README.md), [k8s/README.md](/C:/B_Recheck/k8s/README.md), [AWS_DEPLOYMENT_CHECKLIST.md](/C:/B_Recheck/docs/planning/AWS_DEPLOYMENT_CHECKLIST.md), [AWS_FINAL_PROJECT_GUIDE.md](/C:/B_Recheck/docs/planning/AWS_FINAL_PROJECT_GUIDE.md), [PROD_ENV_CHECKLIST.md](/C:/B_Recheck/docs/operations/PROD_ENV_CHECKLIST.md), [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)을 현재 보호 방식과 폴더 구조 기준으로 다시 맞췄다.
+- 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat test`, `.\gradlew.bat compileJava compileTestJava` 통과를 기준으로 한다.
+
+## 42. Kubernetes health probe 경로를 실제 헬스 응답으로 복구
+
+- `k8s/k8s-bootsync/30-deployment.yaml`은 `readinessProbe=/actuator/health/readiness`, `livenessProbe=/actuator/health/liveness`를 사용하고 있었지만, 앱 보안 설정은 `/actuator/health`만 공개해 실제 컨테이너에서는 두 경로가 로그인 리다이렉트(`302`)로 빠지고 있었다.
+- 이 상태는 kubelet 입장에서는 3xx도 성공으로 간주돼 프로브가 실제 상태를 보지 못하는 문제라, `SecurityConfig`와 `ActiveMemberSessionFilter`에서 `/actuator/health/**`를 공개 경로로 정리했다.
+- `management.endpoint.health.probes.enabled`는 공통 설정으로 올려 prod뿐 아니라 테스트에서도 같은 프로브 경로를 검증할 수 있게 맞췄다.
+- 회귀 테스트로 `WebRoutingTest`에 readiness/liveness가 익명 `200`을 반환하는지 확인하는 항목을 추가했다.
+- 최신 비교 검증 문서의 기준 시각도 다시 갱신해, 현재 스냅샷을 가리키는 문서 설명과 실제 내용이 어긋나지 않게 맞췄다.
+- 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat compileJava compileTestJava`, `.\gradlew.bat test` 통과를 기준으로 한다.
+
+## 43. 출결 관리 전체 누적 출석률 분모를 현재 진행 기준으로 정리
+
+- `/app/attendance`의 `전체 누적` 카드에서 `수업일 / 출석 / 결석`은 이미 지난 수업일 기준으로 보여 주면서, `출석률`만 전체 과정 총수업일을 분모로 다시 나눠 계산하고 있었다.
+- 그 결과 모든 지난 수업일을 `출석`으로 채워도, 남아 있는 미래 수업일이 분모에 포함돼 `89.5%`처럼 낮게 보이는 화면 불일치가 발생했다.
+- 화면은 이제 프론트에서 별도 재계산하지 않고, 백엔드 `TrainingSummaryService`가 내려주는 `attendanceRatePercent`를 그대로 사용해 현재까지 기준 출석률과 일치하게 맞췄다.
+- 출석률이 정확히 `100`일 때는 `100.0%` 대신 `100%`로 보이도록 표기 함수를 한 번 더 다듬었다.
+- 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build` 통과를 기준으로 한다.

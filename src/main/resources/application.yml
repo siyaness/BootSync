@@ -24,10 +24,23 @@ server:
         http-only: true
         same-site: lax
 management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,prometheus
+  metrics:
+    tags:
+      application: BootSync
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 app:
   timezone: ${APP_TIMEZONE:Asia/Seoul}
   allowance:
@@ -48,6 +61,8 @@ app:
     request-ip-hmac-prune-cron: ${APP_AUDIT_REQUEST_IP_HMAC_PRUNE_CRON:0 25 3 * * *}
   security:
     trust-forwarded-headers: ${APP_SECURITY_TRUST_FORWARDED_HEADERS:false}
+  monitoring:
+    prometheus-scrape-token: ${APP_MONITORING_PROMETHEUS_SCRAPE_TOKEN:}
   operations:
     deletion-cancel:
       enabled: ${APP_OPERATIONS_DELETION_CANCEL_ENABLED:false}

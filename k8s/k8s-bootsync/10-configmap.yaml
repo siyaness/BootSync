@@ -3,6 +3,9 @@ kind: ConfigMap
 metadata:
   name: bootsync-config
   namespace: bootsync
+  labels:
+    app.kubernetes.io/name: bootsync-app
+    app.kubernetes.io/part-of: bootsync
 data:
   SPRING_PROFILES_ACTIVE: "prod"
   APP_TIMEZONE: "Asia/Seoul"

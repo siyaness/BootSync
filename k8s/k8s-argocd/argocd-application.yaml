@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bootsync-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/your-org/bootsync.git
+    targetRevision: main
+    path: k8s/k8s-bootsync
+    directory:
+      recurse: false
+      exclude: '{*.example.yaml}'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bootsync
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bootsync-monitoring
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/your-org/bootsync.git
+    targetRevision: main
+    path: k8s/k8s-monitoring
+    directory:
+      recurse: false
+      exclude: '{*.example.yaml}'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bootsync-monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

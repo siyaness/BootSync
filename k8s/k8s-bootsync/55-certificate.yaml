@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bootsync-tls
+  namespace: bootsync
+  labels:
+    app.kubernetes.io/name: bootsync-app
+    app.kubernetes.io/part-of: bootsync
+spec:
+  secretName: bootsync-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  dnsNames:
+    - bootsync.example.com

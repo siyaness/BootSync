@@ -3,10 +3,22 @@ kind: Ingress
 metadata:
   name: bootsync-ingress
   namespace: bootsync
+  labels:
+    app.kubernetes.io/name: bootsync-app
+    app.kubernetes.io/part-of: bootsync
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location ~* "^/actuator" {
+        deny all;
+        return 403;
+      }
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - bootsync.example.com
+      secretName: bootsync-tls
   rules:
     - host: bootsync.example.com
       http:

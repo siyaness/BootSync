@@ -90,8 +90,8 @@
 
 | 항목 | 상태 | 메모 |
 |---|---|---|
-| AWS 배포 | IN_PROGRESS | 체크리스트와 `k8s/` 초안 매니페스트는 추가됨, 실제 ECR/RDS/EC2+k3s 배포 실행은 남음 |
+| AWS 배포 | IN_PROGRESS | 체크리스트와 `k8s/k8s-bootsync`, `k8s/k8s-monitoring`, `k8s/k8s-argocd` 초안 매니페스트는 추가됨, 실제 ECR/RDS/EC2+k3s 배포 실행은 남음 |
 | S3 기반 일일 DB 백업 | OPS | backup/restore script와 로컬 rehearsal report는 추가됨, 실제 S3 업로드/AWS 스케줄/RTO 실측은 남음 |
 | 헬스체크 | DONE | actuator health 공개 |
-| 모니터링/로그 전략 | OPS | 최소 기준 정리 필요 |
+| 모니터링/로그 전략 | IN_PROGRESS | Prometheus/Grafana/node-exporter YAML, scrape token 기반 `/actuator/prometheus` 보호, app/monitoring secret 템플릿은 추가됨. 실제 운영 설치/대시보드/알람 기준은 남음 |
 | README 최신화 | DONE | 현재 코드 상태 반영됨 |

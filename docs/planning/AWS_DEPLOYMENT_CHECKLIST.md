@@ -206,18 +206,40 @@ sudo kubectl get nodes
 
 ## 10. Phase 5: Kubernetes 매니페스트 작성
 
-현재 레포에는 `k8s/` 폴더가 아직 없다.
-최소 아래 파일부터 만든다.
+현재 레포에는 역할별로 나눈 `k8s/` 폴더가 이미 있다.
+앱 배포는 우선 `k8s/k8s-bootsync`를 기준으로 수정해서 사용한다.
 
 ```text
 k8s/
-  00-namespace.yaml
-  01-configmap.yaml
-  02-secret.yaml
-  03-deployment.yaml
-  04-service.yaml
-  05-ingress.yaml
+  k8s-bootsync/
+    00-namespace.yaml
+    10-configmap.yaml
+    20-secret.example.yaml
+    30-deployment.yaml
+    40-service.yaml
+    41-actuator-service.yaml
+    50-ingress.yaml
+    55-certificate.yaml
+    60-hpa.yaml
+  k8s-monitoring/
+    prometheus-config.yaml
+    prometheus-rbac.yaml
+    prometheus-depl_svc.yaml
+    node-exporter.yaml
+    grafana-depl_svc.yaml
+  k8s-argocd/
+    argocd-application.yaml
 ```
+
+실전 적용 전 필수 수정:
+
+- `k8s-bootsync/10-configmap.yaml`의 `APP_PUBLIC_BASE_URL`, 메일 발신 주소, purge/forwarded header 설정
+- `k8s-bootsync/20-secret.example.yaml`를 실제 `20-secret.yaml`로 복사한 뒤 `DB_*`, `MAIL_*`, `APP_AUDIT_REQUEST_IP_HMAC_SECRET`, `APP_MONITORING_PROMETHEUS_SCRAPE_TOKEN` 채우기
+- `k8s-monitoring/prometheus-scrape-secret.example.yaml`을 실제 `prometheus-scrape-secret.yaml`로 복사하고, 앱 Secret과 같은 Prometheus scrape 토큰으로 맞추기
+- `k8s-bootsync/30-deployment.yaml`의 ECR 이미지 경로를 실제 계정/리전 값으로 변경
+- `k8s-bootsync/50-ingress.yaml`의 host를 실제 도메인 또는 임시 주소에 맞게 변경
+- `k8s-bootsync/55-certificate.yaml`과 `k8s-argocd/https.yaml`은 `cert-manager`가 있을 때만 적용
+- `k8s-bootsync/60-hpa.yaml`은 `metrics-server`가 있어야 정상 동작
 
 최소 반영 항목:
 
@@ -226,6 +248,7 @@ k8s/
 - port: `8080`
 - env: [PROD_ENV_CHECKLIST.md](/C:/B_Recheck/docs/operations/PROD_ENV_CHECKLIST.md) 기준 주입
 - imagePullSecret: ECR pull 가능하게 준비
+- Prometheus scrape target: `bootsync-actuator-service:8080/actuator/prometheus` with Bearer token
 
 ## 11. Phase 6: 첫 배포
 
@@ -239,10 +262,27 @@ k8s/
 ### 11.2 배포
 
 ```bash
-kubectl apply -f k8s/
+kubectl apply -f k8s/k8s-bootsync/00-namespace.yaml
+kubectl apply -f k8s/k8s-bootsync/10-configmap.yaml
+kubectl apply -f k8s/k8s-bootsync/20-secret.yaml
+kubectl apply -f k8s/k8s-bootsync/30-deployment.yaml
+kubectl apply -f k8s/k8s-bootsync/40-service.yaml
+kubectl apply -f k8s/k8s-bootsync/41-actuator-service.yaml
+kubectl apply -f k8s/k8s-bootsync/50-ingress.yaml
+kubectl apply -f k8s/k8s-bootsync/55-certificate.yaml
+kubectl apply -f k8s/k8s-bootsync/60-hpa.yaml
+
 kubectl get pods -n bootsync
 kubectl get svc -n bootsync
 kubectl get ingress -n bootsync
+```
+
+```bash
+kubectl apply -f k8s/k8s-monitoring/00-namespace.yaml
+kubectl apply -f k8s/k8s-monitoring/prometheus-rbac.yaml
+kubectl apply -f k8s/k8s-monitoring/prometheus-scrape-secret.yaml
+kubectl apply -f k8s/k8s-monitoring/prometheus-config.yaml
+kubectl apply -f k8s/k8s-monitoring/prometheus-depl_svc.yaml
 ```
 
 완료 체크:
@@ -250,6 +290,7 @@ kubectl get ingress -n bootsync
 - pod가 `Running`
 - readiness/liveness 실패 없음
 - 앱 로그에서 DB 연결 및 Flyway migration 성공 확인
+- `/actuator/prometheus`는 헤더 없는 직접 요청에 `401`이 나오고, 내부 Prometheus scrape 토큰으로만 수집되는지 확인
 
 ## 12. Phase 7: 배포 직후 스모크 테스트
 

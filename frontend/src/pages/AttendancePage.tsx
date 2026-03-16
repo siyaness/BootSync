@@ -94,6 +94,9 @@ function formatSelectedDate(dateStr: string) {
 }
 
 function formatPercent(value: number) {
+  if (value >= 100) {
+    return '100%';
+  }
   return `${value.toFixed(1)}%`;
 }
 
@@ -258,8 +261,8 @@ export default function AttendancePage() {
   const selectedRecord = selectedDate ? getAttendanceForDate(selectedDate) : undefined;
   const selectedDateLabel = selectedDate ? formatSelectedDate(selectedDate) : '';
   const panelFeedback = panelError ?? panelMessage;
-  const officialAttendanceRate = trainingSummary && trainingSummary.courseScheduledDays > 0
-    ? (trainingSummary.effectivePresentDays * 100) / trainingSummary.courseScheduledDays
+  const officialAttendanceRate = trainingSummary
+    ? trainingSummary.attendanceRatePercent
     : null;
 
   const openDateInPanel = (dateStr: string) => {
@@ -267,11 +270,14 @@ export default function AttendancePage() {
     setActiveEditId(null);
     setPanelMessage(null);
     setPanelError(null);
+    if (!isMobile) {
+      return;
+    }
+
     window.requestAnimationFrame(() => {
-      detailPanelRef.current?.focus();
       detailPanelRef.current?.scrollIntoView({
-        behavior: isMobile ? 'smooth' : 'auto',
-        block: isMobile ? 'start' : 'nearest',
+        behavior: 'smooth',
+        block: 'start',
       });
     });
   };
@@ -1012,7 +1018,7 @@ export default function AttendancePage() {
   );
 
   return (
-    <div className={cn('space-y-5 pb-4', desktopContentWidthClass)}>
+    <div className={cn('space-y-5 pb-4', desktopContentWidthClass)} style={{ overflowAnchor: 'none' }}>
       <h1 className="text-[22px] font-bold text-[#1E2A3A]">출결 관리</h1>
 
       <div className={cn('grid gap-5', desktopTwoColumnLayoutClass, desktopRowAlignmentClass)}>

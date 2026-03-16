@@ -3,20 +3,30 @@ kind: Deployment
 metadata:
   name: bootsync-app
   namespace: bootsync
+  labels:
+    app.kubernetes.io/name: bootsync-app
+    app.kubernetes.io/part-of: bootsync
 spec:
   replicas: 1
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: bootsync-app
+      app.kubernetes.io/name: bootsync-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   template:
     metadata:
       labels:
-        app: bootsync-app
+        app.kubernetes.io/name: bootsync-app
+        app.kubernetes.io/part-of: bootsync
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - name: bootsync-app
-          image: <AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/bootsync:latest
+          image: <AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/bootsync-app:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -28,13 +38,13 @@ spec:
                 name: bootsync-secret
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: /actuator/health/readiness
               port: http
             initialDelaySeconds: 20
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /actuator/health
+              path: /actuator/health/liveness
               port: http
             initialDelaySeconds: 40
             periodSeconds: 20

@@ -42,6 +42,7 @@ public class SecurityConfig {
         HttpSecurity http,
         SecurityContextRepository securityContextRepository,
         ActiveMemberSessionFilter activeMemberSessionFilter,
+        PrometheusScrapeTokenFilter prometheusScrapeTokenFilter,
         AuthRateLimitService authRateLimitService,
         ClientIpResolver clientIpResolver,
         @Value("${server.servlet.session.cookie.name:BOOTSYNCSESSION}") String sessionCookieName
@@ -58,7 +59,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                .requestMatchers("/", "/login", "/signup", "/actuator/health").permitAll()
+                .requestMatchers("/", "/login", "/signup", "/actuator/health", "/actuator/health/**", "/actuator/prometheus").permitAll()
                 .requestMatchers("/app", "/app/**").permitAll()
                 .requestMatchers("/auth/login", "/auth/recovery-email/verify").permitAll()
                 .requestMatchers("/api/auth/session", "/api/auth/login", "/api/auth/signup").permitAll()
@@ -67,6 +68,7 @@ public class SecurityConfig {
             )
             .securityContext(securityContext -> securityContext.securityContextRepository(securityContextRepository))
             .sessionManagement(session -> session.sessionFixation(sessionFixation -> sessionFixation.migrateSession()))
+            .addFilterBefore(prometheusScrapeTokenFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new LoginRateLimitFilter(authRateLimitService, clientIpResolver), UsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(activeMemberSessionFilter, AnonymousAuthenticationFilter.class)
             .formLogin(form -> form

@@ -26,6 +26,8 @@ logging:
   level:
     org.springframework.security: INFO
 app:
+  monitoring:
+    prometheus-scrape-token: local-prometheus-token
   recovery-email:
     mail-enabled: false
     development-preview-enabled: true
