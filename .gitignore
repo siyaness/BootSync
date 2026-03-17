@@ -44,3 +44,7 @@ out/
 ### Frontend local artifacts ###
 frontend/node_modules/
 frontend/dist/
+
+### Local/private notes and extracts ###
+tmp/
+학원 노트북용 세팅 가이드.md
