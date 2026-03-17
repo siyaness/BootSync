@@ -31,7 +31,7 @@
 | resend 단일 엔드포인트 | DONE | `/api/settings/recovery-email/resend` |
 | 계정/IP rate limit + resend cooldown | DONE | 계정 5회/1시간, IP 10회/1시간, resend cooldown 1분 회귀 테스트 포함 |
 | 개발용 preview 링크 노출 경계 | DONE | 기본 비활성, `local`/`test`에서만 활성 |
-| 운영 SMTP 실발송 점검 | OPS | runbook은 추가됨, 실제 운영 환경 실메일 smoke test만 남음 |
+| 운영 SMTP 실발송 점검 | OPS | runbook은 추가됨, 운영 SMTP 실메일 스모크 테스트만 남음 |
 | 운영자 보조 계정 복구 절차 | DONE | runbook + password reset maintenance runner + 로컬 rehearsal report + 기존 세션 차단 회귀 테스트 반영 |
 
 ## 3. Dashboard
@@ -84,14 +84,14 @@
 | `PENDING_DELETE` 상태 반영 | DONE | 삭제 요청 시 즉시 상태 전환, 세션 종료 |
 | 삭제 요청 등록/취소 절차 | DONE | 설정 요청 + 취소 서비스 + 삭제 요청 등록부/취소 runbook + deletion cancel maintenance runner |
 | purge 책임 구현 | DONE | 전용 purge 서비스 + 선택적 스케줄 잡 + one-shot rehearsal runner + 멱등 테스트 |
-| 개인정보/운영 문서 | IN_PROGRESS | 핵심 runbook + 로컬 ops/backup rehearsal report + 정책 문서 초안은 추가됨, 실제 운영 주체 값 확정과 실환경 증적은 남음 |
+| 개인정보/운영 문서 | IN_PROGRESS | 핵심 runbook + 로컬 ops/backup rehearsal report + 정책 문서 초안은 추가됨, 정책 문서 확정과 공개 운영 값 반영 및 실환경 증적은 남음 |
 
 ## 8. 운영 / 출시 준비
 
 | 항목 | 상태 | 메모 |
 |---|---|---|
-| AWS 배포 | IN_PROGRESS | 제품 기능 범위와 별도로 운영 준비용 체크리스트와 `k8s/k8s-bootsync`, `k8s/k8s-monitoring`, `k8s/k8s-argocd` 초안 매니페스트는 추가됨, 실제 ECR/RDS/EC2+k3s 배포 실행은 남음 |
-| S3 기반 일일 DB 백업 | OPS | backup/restore script와 로컬 rehearsal report는 추가됨, 실제 S3 업로드/AWS 스케줄/RTO 실측은 남음 |
+| AWS 배포 | IN_PROGRESS | 제품 기능 범위와 별도로 운영 준비용 체크리스트와 `k8s/k8s-bootsync`, `k8s/k8s-monitoring`, `k8s/k8s-argocd` 초안 매니페스트는 추가됨, 실제 AWS 배포(`ECR -> RDS -> EC2/k3s`) 실행은 남음 |
+| S3 기반 일일 DB 백업 | OPS | backup/restore script와 로컬 rehearsal report는 추가됨, 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치, prod-like 복원 리허설과 `RTO 8시간` 실측은 남음 |
 | 헬스체크 | DONE | actuator health 공개 |
 | 모니터링/로그 전략 | IN_PROGRESS | Prometheus/Grafana/node-exporter YAML, scrape token 기반 `/actuator/prometheus` 보호, app/monitoring secret 템플릿은 추가됨. 실제 운영 설치/대시보드/알람 기준은 남음 |
 | README 최신화 | DONE | 현재 코드 상태 반영됨 |

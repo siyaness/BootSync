@@ -31,6 +31,17 @@ README가 여러 개 보여도 역할은 분리돼 있습니다.
 - [PROD_ENV_CHECKLIST.md](operations/PROD_ENV_CHECKLIST.md): 운영 배포에 필요한 환경변수와 maintenance 값 체크리스트
 - [OPERATIONS_EVIDENCE_TEMPLATES.md](operations/OPERATIONS_EVIDENCE_TEMPLATES.md): SMTP, purge, S3, 복원 실측 기록 템플릿
 
+### 현재 운영 준비 상태
+
+- 로컬 rehearsal과 자동 검증 기록은 이미 존재한다.
+- 현재 남은 핵심 운영 과제는 아래 여섯 가지다.
+- 운영 SMTP 실메일 스모크 테스트 수행
+- purge 스케줄 운영 첫 실행 기록 확보
+- AWS 실제 배포 (`ECR -> RDS -> EC2/k3s`)
+- 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치
+- prod-like 복원 리허설 수행과 `RTO 8시간` 실측
+- 정책 문서 확정과 공개 운영 값 반영
+
 ### 정책 문서
 
 - [PRIVACY_POLICY_DRAFT.md](policies/PRIVACY_POLICY_DRAFT.md): 개인정보 처리방침 초안

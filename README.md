@@ -5,7 +5,7 @@ BootSync는 대한민국 국비지원 IT 교육과정 훈련생을 위한 출결
 ## 현재 상태
 
 - 완료: 회원가입/로그인, recovery email verification, 출결 CRUD, 예상 장려금 계산, 스니펫 CRUD, 설정, 계정 삭제 lifecycle, React `/app` UI, 로컬 테스트
-- 진행 중: AWS 실제 배포, SMTP 실메일 smoke test, S3 업로드 증적, prod-like 복원과 `RTO 8시간` 검증, 정책 문서 확정
+- 진행 중: 운영 SMTP 실메일 스모크 테스트, purge 스케줄 운영 첫 실행 기록, AWS 실제 배포, 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치, prod-like 복원 리허설과 `RTO 8시간` 실측, 정책 문서 확정과 공개 운영 값 반영
 
 ## 핵심 기능
 
@@ -44,7 +44,7 @@ BootSync는 대한민국 국비지원 IT 교육과정 훈련생을 위한 출결
   SQL dump 생성, restore 테스트, row count 검증까지 남긴 기록입니다.
 - 운영 절차와 증적 템플릿: [OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md), [OPERATIONS_EVIDENCE_TEMPLATES.md](docs/operations/OPERATIONS_EVIDENCE_TEMPLATES.md)
   실제 운영 점검 시 어떤 순서로 실행하고 어떤 증적을 남길지 확인할 수 있습니다.
-- 아직 남은 운영 증적: AWS 실제 배포, SMTP 실메일 smoke test, S3 업로드 기록, prod-like 복원과 `RTO 8시간` 검증
+- 아직 남은 운영 증적: 운영 SMTP 실메일 스모크 테스트, purge 스케줄 운영 첫 실행 기록, AWS 실제 배포, 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치, prod-like 복원 리허설과 `RTO 8시간` 실측
 
 ## 3단계로 실행
 
@@ -421,8 +421,9 @@ $env:APP_SECURITY_TRUST_FORWARDED_HEADERS='true'
 
 ## 아직 남은 과제
 
-- 운영 SMTP 실메일 smoke test 실제 수행
+- 운영 SMTP 실메일 스모크 테스트 수행
 - purge 스케줄 운영 첫 실행 기록 확보
 - AWS 실제 배포 진행 (`ECR -> RDS -> EC2/k3s`), 현재 [k8s](k8s) 초안 매니페스트는 준비됨
-- 운영 AWS 자격증명으로 S3 업로드 1회 이상과 prod-like 복원/RTO 검증
-- 개인정보 처리방침 / 이용약관 확정
+- 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치
+- prod-like 복원 리허설 수행과 `RTO 8시간` 실측
+- 개인정보 처리방침 / 이용약관 / 삭제·복구 정책 확정과 공개 운영 값 반영

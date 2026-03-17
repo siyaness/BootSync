@@ -13,10 +13,12 @@
 
 중요: 이 문서는 현재 구현과 명세를 맞추기 위한 운영 절차 문서다. 실제 공개 출시 기준은 아래 항목이 별도로 충족돼야 한다.
 
-- 운영 SMTP 실메일 smoke test 실제 수행
+- 운영 SMTP 실메일 스모크 테스트 수행
 - purge 스케줄 운영 첫 실행 기록 확보
-- 운영 AWS 자격증명 기준 S3 업로드 1회 이상과 prod-like 복원 리허설 실측
-- 개인정보 처리방침 / 이용약관 확정
+- AWS 실제 배포(`ECR -> RDS -> EC2/k3s`) 진행
+- 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치
+- prod-like 복원 리허설 수행과 `RTO 8시간` 실측
+- 개인정보 처리방침 / 이용약관 / 삭제·복구 정책 확정과 공개 운영 값 반영
 
 ## 1. request_ip_hmac 운영 규칙
 
@@ -419,7 +421,7 @@ $env:APP_OPERATIONS_PASSWORD_RESET_REASON='ticket-123 password reset assist'
 - [Invoke-MySqlBackupToS3.ps1](../../scripts/ops/Invoke-MySqlBackupToS3.ps1), [Invoke-MySqlRestoreFromS3.ps1](../../scripts/ops/Invoke-MySqlRestoreFromS3.ps1)로 백업/복원 스크립트가 추가됐다.
 - 로컬 backup/restore rehearsal 기록은 [2026-03-15-backup-restore-rehearsal.md](../reports/ops/2026-03-15-backup-restore-rehearsal.md)에 남겼다.
 - 현재 스크립트 구현은 `docker exec/cp`로 MySQL 컨테이너를 기준으로 동작하므로, 최종 운영 DB를 `RDS`로 쓸 때는 실행 위치나 스크립트 입력값을 RDS 기준으로 보완해야 한다.
-- 공개 출시 전에는 실제 AWS 자격증명 기준의 S3 업로드 1회 이상과 prod-like 복원/RTO 측정이 별도로 필요하다.
+- 공개 출시 전에는 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치, prod-like 복원 리허설과 `RTO 8시간` 실측이 별도로 필요하다.
 
 ### 목표 기준
 
@@ -559,8 +561,9 @@ DELETE FROM member WHERE id = ?;
 
 ## 7. 현재 남은 후속 과제
 
-- 운영 SMTP 실메일 smoke test 실제 수행
+- 운영 SMTP 실메일 스모크 테스트 수행
 - purge 스케줄 운영 첫 실행 기록 확보
-- 운영 AWS 자격증명으로 S3 업로드 1회 이상 수행
-- prod-like 복원 리허설 실측과 `RTO 8시간` 검증
-- 개인정보 처리방침 / 이용약관 확정
+- AWS 실제 배포(`ECR -> RDS -> EC2/k3s`) 진행
+- 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치
+- prod-like 복원 리허설 수행과 `RTO 8시간` 실측
+- 개인정보 처리방침 / 이용약관 / 삭제·복구 정책 확정과 공개 운영 값 반영

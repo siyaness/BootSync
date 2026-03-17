@@ -321,9 +321,9 @@ kubectl apply -f k8s/k8s-monitoring/prometheus-depl_svc.yaml
 - 앱 접속 화면
 - `/actuator/health` 성공
 - 로그인 성공
-- SMTP 실메일 1회
-- S3 업로드 1회
-- prod-like 복원 rehearsal 1회
+- 운영 SMTP 실메일 스모크 테스트 1회
+- 운영 AWS 자격증명 기준 S3 업로드 1회
+- prod-like 복원 리허설 1회와 `RTO 8시간` 실측
 
 ## 14. 실패 시 우선 확인 순서
 
