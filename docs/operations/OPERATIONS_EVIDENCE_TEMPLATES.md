@@ -4,6 +4,11 @@
 
 이 문서는 아직 실제 운영 증적이 없는 항목을 빠르게 기록할 수 있도록 만든 템플릿 모음입니다. README, PROJECT_PLAN, SPEC_TRACKER에서 공통으로 추적하는 `운영 SMTP 실메일 스모크 테스트`, `purge 스케줄 운영 첫 실행 기록`, `운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치`, `prod-like 복원 리허설과 RTO 8시간 실측`을 같은 기준으로 남기기 위한 템플릿입니다. 각 항목은 실행 후 새 markdown 보고서로 복사해 채우는 것을 권장합니다.
 
+참고:
+
+- SMTP 실메일 스모크 테스트는 [Invoke-RecoveryEmailSmtpSmokeTest.ps1](../../scripts/ops/Invoke-RecoveryEmailSmtpSmokeTest.ps1)로 회원가입 발송 트리거와 초안 보고서 생성을 자동화할 수 있습니다.
+- 최신 예시는 [2026-03-17-smtp-smoke-test.md](../reports/ops/2026-03-17-smtp-smoke-test.md)에서 확인할 수 있습니다.
+
 ## 1. SMTP 실메일 스모크 테스트 템플릿
 
 파일명 예시:

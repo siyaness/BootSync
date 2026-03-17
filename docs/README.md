@@ -34,8 +34,8 @@ README가 여러 개 보여도 역할은 분리돼 있습니다.
 ### 현재 운영 준비 상태
 
 - 로컬 rehearsal과 자동 검증 기록은 이미 존재한다.
-- 현재 남은 핵심 운영 과제는 아래 여섯 가지다.
-- 운영 SMTP 실메일 스모크 테스트 수행
+- 운영 SMTP 실메일 스모크 테스트 보고서가 추가됐다.
+- 현재 남은 핵심 운영 과제는 아래 다섯 가지다.
 - purge 스케줄 운영 첫 실행 기록 확보
 - AWS 실제 배포 (`ECR -> RDS -> EC2/k3s`)
 - 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치
@@ -53,6 +53,7 @@ README가 여러 개 보여도 역할은 분리돼 있습니다.
 - [WORK_LOG.md](history/WORK_LOG.md): 작업 기록과 검증 이력
 - [2026-03-15-ops-rehearsal.md](reports/ops/2026-03-15-ops-rehearsal.md): 로컬 운영 rehearsal 3종 실행 기록
 - [2026-03-15-backup-restore-rehearsal.md](reports/ops/2026-03-15-backup-restore-rehearsal.md): 로컬 백업/복원 자동화 rehearsal 기록
+- [2026-03-17-smtp-smoke-test.md](reports/ops/2026-03-17-smtp-smoke-test.md): 실SMTP 기준 recovery email 발송과 confirm 확인 기록
 - [2026-03-14-release-note.md](reports/releases/2026-03-14-release-note.md): 최근 수정 사항을 사람 읽기 좋게 정리한 공유용 문서
 - [2026-03-16-validation-checkpoint.md](reports/checkpoints/2026-03-16-validation-checkpoint.md): 현재 스냅샷 기준 전체 비교 검증과 자동 테스트 결과
 - [final-checkpoint.md](reports/checkpoints/final-checkpoint.md): 2026-03-15 기준 최종 점검 요약

@@ -13,7 +13,6 @@
 
 중요: 이 문서는 현재 구현과 명세를 맞추기 위한 운영 절차 문서다. 실제 공개 출시 기준은 아래 항목이 별도로 충족돼야 한다.
 
-- 운영 SMTP 실메일 스모크 테스트 수행
 - purge 스케줄 운영 첫 실행 기록 확보
 - AWS 실제 배포(`ECR -> RDS -> EC2/k3s`) 진행
 - 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치
@@ -96,6 +95,11 @@ $env:APP_AUDIT_REQUEST_IP_HMAC_PRUNE_CRON='0 25 3 * * *'
 
 - 운영 환경에서 recovery email이 실제로 발송되고, 사용자가 받은 링크로 검증을 완료할 수 있는지 확인한다.
 
+### 최근 확인 기록
+
+- 최신 실메일 스모크 테스트 보고서: [2026-03-17-smtp-smoke-test.md](../reports/ops/2026-03-17-smtp-smoke-test.md)
+- 이번 기록은 `smtp.naver.com` 기준 실메일 도착, preview/confirm, verified 반영까지 확인한 결과다.
+
 ### 사전 준비
 
 - 발신 주소 또는 도메인이 SMTP/SES 제공자에서 검증돼 있어야 한다.
@@ -134,6 +138,21 @@ $env:MAIL_PASSWORD='smtp-password'
 5. 링크를 열어 preview 화면이 뜨는지 확인한다.
 6. 확인 버튼으로 최종 확정이 되는지 확인한다.
 7. 완료 후 `/api/auth/session` 또는 설정 화면에서 verified 상태가 반영됐는지 확인한다.
+
+자동화 보조:
+
+- [Invoke-RecoveryEmailSmtpSmokeTest.ps1](../../scripts/ops/Invoke-RecoveryEmailSmtpSmokeTest.ps1)은 mail-enabled 상태로 이미 기동한 앱을 상대로 회원가입을 호출해 실제 메일 발송을 유도하고, `build/ops-smtp/reports` 아래에 확인용 markdown 초안을 생성한다.
+- 예시:
+
+```powershell
+pwsh -File .\scripts\ops\Invoke-RecoveryEmailSmtpSmokeTest.ps1 `
+  -BaseUrl 'http://localhost:18080' `
+  -TargetEmail 'qa@example.com' `
+  -FromAddress 'no-reply@example.com' `
+  -MailHost 'smtp.example.com'
+```
+
+- 이 스크립트는 메일함 확인과 링크 confirm 자체까지 자동화하지는 않는다. 메일 도착, 링크 도메인, confirm 성공 여부는 수동 확인 후 보고서에 채운다.
 
 ### 재발송 점검
 

@@ -31,7 +31,7 @@
 | resend 단일 엔드포인트 | DONE | `/api/settings/recovery-email/resend` |
 | 계정/IP rate limit + resend cooldown | DONE | 계정 5회/1시간, IP 10회/1시간, resend cooldown 1분 회귀 테스트 포함 |
 | 개발용 preview 링크 노출 경계 | DONE | 기본 비활성, `local`/`test`에서만 활성 |
-| 운영 SMTP 실발송 점검 | OPS | runbook은 추가됨, 운영 SMTP 실메일 스모크 테스트만 남음 |
+| 운영 SMTP 실발송 점검 | DONE | [2026-03-17-smtp-smoke-test.md](../reports/ops/2026-03-17-smtp-smoke-test.md) 기준 실메일 도착, preview/confirm, verified 반영 확인. 운영 도메인 기준 재확인은 AWS 배포 후 release smoke에서 별도 확인 |
 | 운영자 보조 계정 복구 절차 | DONE | runbook + password reset maintenance runner + 로컬 rehearsal report + 기존 세션 차단 회귀 테스트 반영 |
 
 ## 3. Dashboard

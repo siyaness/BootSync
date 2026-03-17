@@ -4,8 +4,8 @@ BootSync는 대한민국 국비지원 IT 교육과정 훈련생을 위한 출결
 
 ## 현재 상태
 
-- 완료: 회원가입/로그인, recovery email verification, 출결 CRUD, 예상 장려금 계산, 스니펫 CRUD, 설정, 계정 삭제 lifecycle, React `/app` UI, 로컬 테스트
-- 진행 중: 운영 SMTP 실메일 스모크 테스트, purge 스케줄 운영 첫 실행 기록, AWS 실제 배포, 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치, prod-like 복원 리허설과 `RTO 8시간` 실측, 정책 문서 확정과 공개 운영 값 반영
+- 완료: 회원가입/로그인, recovery email verification, 출결 CRUD, 예상 장려금 계산, 스니펫 CRUD, 설정, 계정 삭제 lifecycle, React `/app` UI, 로컬 테스트, 운영 SMTP 실메일 스모크 테스트
+- 진행 중: purge 스케줄 운영 첫 실행 기록, AWS 실제 배포, 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치, prod-like 복원 리허설과 `RTO 8시간` 실측, 정책 문서 확정과 공개 운영 값 반영
 
 ## 핵심 기능
 
@@ -36,6 +36,8 @@ BootSync는 대한민국 국비지원 IT 교육과정 훈련생을 위한 출결
 
 ## 검증 및 운영 기록
 
+- 운영 SMTP 실메일 스모크 테스트: [2026-03-17-smtp-smoke-test.md](docs/reports/ops/2026-03-17-smtp-smoke-test.md)
+  `smtp.naver.com` 기준 실메일 도착, preview/confirm, verified 상태 반영까지 확인한 기록입니다.
 - 최신 전체 검증 기록: [2026-03-16-validation-checkpoint.md](docs/reports/checkpoints/2026-03-16-validation-checkpoint.md)
   `frontend npm run lint`, `npm run build`, `.\gradlew.bat compileJava compileTestJava test` 통과 기준을 정리했습니다.
 - 로컬 운영 rehearsal: [2026-03-15-ops-rehearsal.md](docs/reports/ops/2026-03-15-ops-rehearsal.md)
@@ -44,7 +46,7 @@ BootSync는 대한민국 국비지원 IT 교육과정 훈련생을 위한 출결
   SQL dump 생성, restore 테스트, row count 검증까지 남긴 기록입니다.
 - 운영 절차와 증적 템플릿: [OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md), [OPERATIONS_EVIDENCE_TEMPLATES.md](docs/operations/OPERATIONS_EVIDENCE_TEMPLATES.md)
   실제 운영 점검 시 어떤 순서로 실행하고 어떤 증적을 남길지 확인할 수 있습니다.
-- 아직 남은 운영 증적: 운영 SMTP 실메일 스모크 테스트, purge 스케줄 운영 첫 실행 기록, AWS 실제 배포, 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치, prod-like 복원 리허설과 `RTO 8시간` 실측
+- 아직 남은 운영 증적: purge 스케줄 운영 첫 실행 기록, AWS 실제 배포, 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치, prod-like 복원 리허설과 `RTO 8시간` 실측
 
 ## 3단계로 실행
 
