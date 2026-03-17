@@ -34,6 +34,18 @@ BootSync는 대한민국 국비지원 IT 교육과정 훈련생을 위한 출결
 
 ![BootSync 설정 화면](docs/images/readme/settings.png)
 
+## 검증 및 운영 기록
+
+- 최신 전체 검증 기록: [2026-03-16-validation-checkpoint.md](docs/reports/checkpoints/2026-03-16-validation-checkpoint.md)
+  `frontend npm run lint`, `npm run build`, `.\gradlew.bat compileJava compileTestJava test` 통과 기준을 정리했습니다.
+- 로컬 운영 rehearsal: [2026-03-15-ops-rehearsal.md](docs/reports/ops/2026-03-15-ops-rehearsal.md)
+  운영자 보조 비밀번호 초기화, purge one-shot, 복원 후 scrub 절차의 로컬 실행 기록입니다.
+- 로컬 백업/복원 rehearsal: [2026-03-15-backup-restore-rehearsal.md](docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)
+  SQL dump 생성, restore 테스트, row count 검증까지 남긴 기록입니다.
+- 운영 절차와 증적 템플릿: [OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md), [OPERATIONS_EVIDENCE_TEMPLATES.md](docs/operations/OPERATIONS_EVIDENCE_TEMPLATES.md)
+  실제 운영 점검 시 어떤 순서로 실행하고 어떤 증적을 남길지 확인할 수 있습니다.
+- 아직 남은 운영 증적: AWS 실제 배포, SMTP 실메일 smoke test, S3 업로드 기록, prod-like 복원과 `RTO 8시간` 검증
+
 ## 3단계로 실행
 
 ```powershell
