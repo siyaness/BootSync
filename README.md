@@ -16,6 +16,24 @@ BootSync는 대한민국 국비지원 IT 교육과정 훈련생을 위한 출결
 - 계정 삭제 요청, 유예 기간, purge runner, 운영자 보조 복구/취소 절차
 - same-origin React `/app` 프론트와 Spring API 결합 구조
 
+## 화면 미리보기
+
+아래 화면은 `test` 프로필 기준 데모 흐름을 캡처한 이미지입니다.
+
+| 로그인 | 대시보드 |
+|---|---|
+| ![BootSync 로그인 화면](docs/images/readme/login.png) | ![BootSync 대시보드 화면](docs/images/readme/dashboard.png) |
+
+| 과정 현황 | 출결 관리 |
+|---|---|
+| ![BootSync 과정 현황 화면](docs/images/readme/course-status.png) | ![BootSync 출결 관리 화면](docs/images/readme/attendance.png) |
+
+| 예상 훈련장려금 | 학습 노트 |
+|---|---|
+| ![BootSync 예상 훈련장려금 화면](docs/images/readme/allowance.png) | ![BootSync 학습 노트 화면](docs/images/readme/snippets.png) |
+
+![BootSync 설정 화면](docs/images/readme/settings.png)
+
 ## 3단계로 실행
 
 ```powershell
