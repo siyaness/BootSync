@@ -6,7 +6,7 @@
 
 - 목표는 `문서상 계획`이 아니라 `실제 배포 완료`다.
 - 현재 프로젝트 기준 추천 아키텍처는 `ECR -> RDS MySQL -> EC2 + k3s`다.
-- 세부 개념 설명은 [AWS_FINAL_PROJECT_GUIDE.md](/C:/B_Recheck/docs/planning/AWS_FINAL_PROJECT_GUIDE.md)를 먼저 보고, 이 문서는 실행 순서 기준으로 본다.
+- 세부 개념 설명은 [AWS_FINAL_PROJECT_GUIDE.md](AWS_FINAL_PROJECT_GUIDE.md)를 먼저 보고, 이 문서는 실행 순서 기준으로 본다.
 
 ## 2. 권장 기본값
 
@@ -43,14 +43,14 @@
 
 ### 5.1 로컬 코드 상태 확인
 
-- [README.md](/C:/B_Recheck/README.md) 기준 주요 기능이 로컬에서 이미 동작하는지 확인
-- [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md) 기준 현재 우선순위가 배포 단계인지 확인
-- [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md) 기준 `AWS 배포`, `S3 백업`, `운영 SMTP`가 아직 남아 있는지 확인
+- [README.md](../../README.md) 기준 주요 기능이 로컬에서 이미 동작하는지 확인
+- [PROJECT_PLAN.md](PROJECT_PLAN.md) 기준 현재 우선순위가 배포 단계인지 확인
+- [SPEC_TRACKER.md](../spec/SPEC_TRACKER.md) 기준 `AWS 배포`, `S3 백업`, `운영 SMTP`가 아직 남아 있는지 확인
 
 ### 5.2 로컬 빌드 확인
 
 ```powershell
-cd C:\B_Recheck
+cd <repo-root>
 docker build -t bootsync-app:latest .
 docker run --rm --entrypoint sh bootsync-app:latest -lc 'id -u; whoami; echo $SPRING_PROFILES_ACTIVE'
 ```
@@ -96,7 +96,7 @@ aws ecr get-login-password --region $env:AWS_REGION `
 ### 6.4 이미지 tag / push
 
 ```powershell
-docker build -t bootsync-app:latest C:\B_Recheck
+docker build -t bootsync-app:latest .
 
 $imageUri = "$($env:AWS_ACCOUNT_ID).dkr.ecr.$($env:AWS_REGION).amazonaws.com/$($env:ECR_REPOSITORY):$($env:IMAGE_TAG)"
 
@@ -184,7 +184,7 @@ sudo kubectl get nodes
 
 ## 9. Phase 4: 운영 환경값 준비
 
-이 단계에서는 [PROD_ENV_CHECKLIST.md](/C:/B_Recheck/docs/operations/PROD_ENV_CHECKLIST.md)를 같이 본다.
+이 단계에서는 [PROD_ENV_CHECKLIST.md](../operations/PROD_ENV_CHECKLIST.md)를 같이 본다.
 
 최소 준비:
 
@@ -246,7 +246,7 @@ k8s/
 - namespace: `bootsync`
 - image: ECR의 `bootsync-app:latest`
 - port: `8080`
-- env: [PROD_ENV_CHECKLIST.md](/C:/B_Recheck/docs/operations/PROD_ENV_CHECKLIST.md) 기준 주입
+- env: [PROD_ENV_CHECKLIST.md](../operations/PROD_ENV_CHECKLIST.md) 기준 주입
 - imagePullSecret: ECR pull 가능하게 준비
 - Prometheus scrape target: `bootsync-actuator-service:8080/actuator/prometheus` with Bearer token
 

@@ -4,8 +4,8 @@
 
 ## 이 README는 언제 보면 되나
 
-- 프로젝트 전체 소개와 로컬 실행은 [README.md](/C:/B_Recheck/README.md)를 먼저 봅니다.
-- 명세, 계획, 운영 문서 위치를 찾고 싶으면 [docs/README.md](/C:/B_Recheck/docs/README.md)를 봅니다.
+- 프로젝트 전체 소개와 로컬 실행은 [README.md](../README.md)를 먼저 봅니다.
+- 명세, 계획, 운영 문서 위치를 찾고 싶으면 [docs/README.md](../docs/README.md)를 봅니다.
 - 이 파일은 Kubernetes 매니페스트를 실제로 적용하거나, `k8s-bootsync`, `k8s-monitoring`, `k8s-argocd`의 역할을 구분할 때 보는 전용 안내입니다.
 
 강의 예시처럼 역할별 폴더로 나눴습니다.

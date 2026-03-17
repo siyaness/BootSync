@@ -4,7 +4,7 @@
 
 이 문서는 BootSync 운영 배포에 필요한 환경변수를 코드 기준으로 정리한 체크리스트다.
 
-- 기준 파일: [application.yml](/C:/B_Recheck/src/main/resources/application.yml), [application-prod.yml](/C:/B_Recheck/src/main/resources/application-prod.yml)
+- 기준 파일: [application.yml](../../src/main/resources/application.yml), [application-prod.yml](../../src/main/resources/application-prod.yml)
 - 목적: `배포 직전 어떤 값을 넣어야 하는지`를 한 번에 확인하기 위함
 - 이 문서는 값의 존재 여부와 용도를 정리하는 문서이고, 실제 값은 저장소에 커밋하지 않는다.
 
@@ -72,6 +72,8 @@
 | `APP_ACCOUNT_DELETION_PURGE_RUN_ONCE_ENABLED` | `false` | 일회성 maintenance path |
 | `APP_OPERATIONS_PASSWORD_RESET_ENABLED` | `false` | 일회성 maintenance path |
 | `APP_OPERATIONS_DELETION_CANCEL_ENABLED` | `false` | 일회성 maintenance path |
+| `BOOTSYNC_DEMO_USERNAME` | unset | 로컬 시드 전용 계정 |
+| `BOOTSYNC_DEMO_PASSWORD` | unset | 로컬 시드 전용 계정 |
 
 ## 7. 상황별로 잠깐만 쓰는 maintenance 변수
 
@@ -120,7 +122,7 @@
 
 주의:
 
-- 현재 [Invoke-MySqlBackupToS3.ps1](/C:/B_Recheck/scripts/ops/Invoke-MySqlBackupToS3.ps1)와 [Invoke-MySqlRestoreFromS3.ps1](/C:/B_Recheck/scripts/ops/Invoke-MySqlRestoreFromS3.ps1)는 `docker exec/cp`로 MySQL 컨테이너를 기준으로 동작한다.
+- 현재 [Invoke-MySqlBackupToS3.ps1](../../scripts/ops/Invoke-MySqlBackupToS3.ps1)와 [Invoke-MySqlRestoreFromS3.ps1](../../scripts/ops/Invoke-MySqlRestoreFromS3.ps1)는 `docker exec/cp`로 MySQL 컨테이너를 기준으로 동작한다.
 - 최종 운영 DB가 `RDS`라면, 이 값들만 넣는다고 바로 운영 백업이 완성되는 것은 아니다.
 
 ## 9. prod 예시 템플릿
@@ -177,7 +179,7 @@ APP_ACCOUNT_DELETION_PURGE_CRON=0 15 3 * * *
 
 ## 11. 같이 볼 문서
 
-- [AWS_DEPLOYMENT_CHECKLIST.md](/C:/B_Recheck/docs/planning/AWS_DEPLOYMENT_CHECKLIST.md)
-- [AWS_FINAL_PROJECT_GUIDE.md](/C:/B_Recheck/docs/planning/AWS_FINAL_PROJECT_GUIDE.md)
-- [OPERATIONS_RUNBOOK.md](/C:/B_Recheck/docs/operations/OPERATIONS_RUNBOOK.md)
-- [README.md](/C:/B_Recheck/README.md)
+- [AWS_DEPLOYMENT_CHECKLIST.md](../planning/AWS_DEPLOYMENT_CHECKLIST.md)
+- [AWS_FINAL_PROJECT_GUIDE.md](../planning/AWS_FINAL_PROJECT_GUIDE.md)
+- [OPERATIONS_RUNBOOK.md](OPERATIONS_RUNBOOK.md)
+- [README.md](../../README.md)

@@ -2,7 +2,7 @@
 
 최종 수정일: 2026-03-16
 
-이 문서는 이용자에게 공개할 수 있는 수준의 계정 삭제 및 복구 절차 설명서입니다. 운영 내부 세부 절차는 [OPERATIONS_RUNBOOK.md](/C:/B_Recheck/docs/operations/OPERATIONS_RUNBOOK.md)를 따릅니다.
+이 문서는 이용자에게 공개할 수 있는 수준의 계정 삭제 및 복구 절차 설명서입니다. 운영 내부 세부 절차는 [OPERATIONS_RUNBOOK.md](../operations/OPERATIONS_RUNBOOK.md)를 따릅니다.
 
 ## 1. 계정 삭제 요청
 

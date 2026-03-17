@@ -4,11 +4,11 @@
 
 ## 시작 전 필수 확인
 
-1. [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md)를 확인해 현재 작업이 명세와 어떻게 연결되는지 파악한다.
-2. [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md)를 확인해 현재 단계와 다음 우선순위를 파악한다.
-3. [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)를 확인해 구현 상태와 남은 갭을 파악한다.
-4. 작업 내용이 실행 방법이나 사용자 흐름에 영향을 주면 [README.md](/C:/B_Recheck/README.md)도 함께 확인한다.
-5. 문서 관련 작업이면 [docs/README.md](/C:/B_Recheck/docs/README.md)부터 열어 현재 문서 구조와 연결 문서를 확인한다.
+1. [BOOTSYNC_SPEC_V2.md](docs/spec/BOOTSYNC_SPEC_V2.md)를 확인해 현재 작업이 명세와 어떻게 연결되는지 파악한다.
+2. [PROJECT_PLAN.md](docs/planning/PROJECT_PLAN.md)를 확인해 현재 단계와 다음 우선순위를 파악한다.
+3. [SPEC_TRACKER.md](docs/spec/SPEC_TRACKER.md)를 확인해 구현 상태와 남은 갭을 파악한다.
+4. 작업 내용이 실행 방법이나 사용자 흐름에 영향을 주면 [README.md](README.md)도 함께 확인한다.
+5. 문서 관련 작업이면 [docs/README.md](docs/README.md)부터 열어 현재 문서 구조와 연결 문서를 확인한다.
 
 ## 우선순위 원칙
 
@@ -46,8 +46,8 @@
 
 ## 문서 역할
 
-- [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md): 최종 기준 명세
-- [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md): 전체 개발 로드맵과 현재 우선순위
-- [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md): 명세 항목별 구현 상태 추적표
-- [README.md](/C:/B_Recheck/README.md): 실행 방법과 현재 사용자 관점 동작
-- [docs/README.md](/C:/B_Recheck/docs/README.md): 문서 허브와 세부 문서 진입점
+- [BOOTSYNC_SPEC_V2.md](docs/spec/BOOTSYNC_SPEC_V2.md): 최종 기준 명세
+- [PROJECT_PLAN.md](docs/planning/PROJECT_PLAN.md): 전체 개발 로드맵과 현재 우선순위
+- [SPEC_TRACKER.md](docs/spec/SPEC_TRACKER.md): 명세 항목별 구현 상태 추적표
+- [README.md](README.md): 실행 방법과 현재 사용자 관점 동작
+- [docs/README.md](docs/README.md): 문서 허브와 세부 문서 진입점

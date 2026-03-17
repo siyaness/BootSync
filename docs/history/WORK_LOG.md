@@ -6,7 +6,7 @@
 
 ## 1. 프론트엔드 전환
 
-- 새 React 프론트를 [frontend](/C:/B_Recheck/frontend)에서 별도 관리하고, 빌드 결과물만 Spring 앱의 `/app` 경로에 붙이도록 정리했다.
+- 새 React 프론트를 [frontend](../../frontend)에서 별도 관리하고, 빌드 결과물만 Spring 앱의 `/app` 경로에 붙이도록 정리했다.
 - 루트(`/`) 접속 시 현재 세션 상태에 따라 `/app/login` 또는 `/app/dashboard`로 이동하도록 연결했다.
 - Gradle이 `frontend/dist`를 `build/generated-resources/frontend/static/app`으로 복사해 백엔드 코드와 프론트 소스가 직접 섞이지 않도록 구성했다.
 - 초기 blank screen 문제는 React Router 기준 경로 처리와 정적 자산 반영 흐름을 정리해 해결했다.
@@ -74,7 +74,7 @@
 
 ## 9. 운영 runbook 추가
 
-- [OPERATIONS_RUNBOOK.md](/C:/B_Recheck/docs/operations/OPERATIONS_RUNBOOK.md)를 추가해 `request_ip_hmac` 보존/키 회전 절차와 recovery email SMTP 실메일 점검 절차를 정리했다.
+- [OPERATIONS_RUNBOOK.md](../operations/OPERATIONS_RUNBOOK.md)를 추가해 `request_ip_hmac` 보존/키 회전 절차와 recovery email SMTP 실메일 점검 절차를 정리했다.
 - `request_ip_hmac`는 현재 키 버전 컬럼이 없으므로, 회전 시각과 키 라벨을 앱 외부 운영 기록에 반드시 남겨야 한다는 점을 문서에 명시했다.
 
 ## 10. 삭제 요청 / 복구 / 백업 운영 절차 확장
@@ -129,7 +129,7 @@
 ## 16. 명세 본문과 프론트 스캐폴드 정리
 
 - `BOOTSYNC_SPEC_V2.md` 본문에서 남아 있던 `Thymeleaf`, `HTMX`, hidden method 폼, 전용 검색 API 기준 설명을 현재 React `/app` + same-origin API 구조에 맞게 갱신했다.
-- 프론트 전용 문서 [frontend/README.md](/C:/B_Recheck/frontend/README.md)도 Vite 기본 템플릿 문구 대신 BootSync 실제 구조 설명으로 교체했다.
+- 프론트 전용 문서 [frontend/README.md](../../frontend/README.md)도 Vite 기본 템플릿 문구 대신 BootSync 실제 구조 설명으로 교체했다.
 - 더 이상 사용하지 않는 `src/components/home.tsx`, `src/tempobook`, `tempo.config.json` 같은 프론트 스캐폴드 잔여물 정리 작업을 진행했다.
 - Vite 설정의 `optimizeDeps`에서 `tempobook` 경로를 제거해 현재 실제 앱 진입점만 기준으로 최적화하도록 정리했다.
 - 프론트 루트 `.gitignore`에서도 `tempobook` 전용 ignore 규칙을 제거했다.
@@ -153,11 +153,11 @@
 
 ## 19. 참고 문서
 
-- 명세: [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md)
-- 전체 계획: [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md)
-- 명세 추적: [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)
-- 실행 및 현재 상태: [README.md](/C:/B_Recheck/README.md)
-- 운영 점검 절차: [OPERATIONS_RUNBOOK.md](/C:/B_Recheck/docs/operations/OPERATIONS_RUNBOOK.md)
+- 명세: [BOOTSYNC_SPEC_V2.md](../spec/BOOTSYNC_SPEC_V2.md)
+- 전체 계획: [PROJECT_PLAN.md](../planning/PROJECT_PLAN.md)
+- 명세 추적: [SPEC_TRACKER.md](../spec/SPEC_TRACKER.md)
+- 실행 및 현재 상태: [README.md](../../README.md)
+- 운영 점검 절차: [OPERATIONS_RUNBOOK.md](../operations/OPERATIONS_RUNBOOK.md)
 
 ## 20. 출결 레이아웃 흔들림 안정화
 
@@ -187,8 +187,8 @@
 ## 22. 로컬 운영 rehearsal 3종 기록
 
 - `OpsRehearsalSeedRunner`를 추가해 `local`/`test`에서 maintenance runner 대상 계정과 관련 데이터(seed)를 한 번에 준비할 수 있게 했다.
-- [Invoke-LocalOpsRehearsals.ps1](/C:/B_Recheck/scripts/ops/Invoke-LocalOpsRehearsals.ps1)를 추가해 MySQL 기동, seed, 운영자 보조 비밀번호 초기화, purge one-shot, 복원 후 scrub rehearsal을 한 번에 반복 실행할 수 있게 했다.
-- 2026-03-15 02:38 KST 기준 로컬 rehearsal을 실제로 수행했고, 결과는 [2026-03-15-ops-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-ops-rehearsal.md)에 남겼다.
+- [Invoke-LocalOpsRehearsals.ps1](../../scripts/ops/Invoke-LocalOpsRehearsals.ps1)를 추가해 MySQL 기동, seed, 운영자 보조 비밀번호 초기화, purge one-shot, 복원 후 scrub rehearsal을 한 번에 반복 실행할 수 있게 했다.
+- 2026-03-15 02:38 KST 기준 로컬 rehearsal을 실제로 수행했고, 결과는 [2026-03-15-ops-rehearsal.md](../reports/ops/2026-03-15-ops-rehearsal.md)에 남겼다.
 - password reset rehearsal에서는 `ops_reset_target`의 `updated_at`이 `2026-03-15 02:33:28.533007`에서 `2026-03-15 02:38:35.685551`로 바뀌고 runner 완료 로그가 남는 것을 확인했다.
 - purge one-shot rehearsal에서는 `ops_purge_due_target`의 `member`, `attendance_record`, `snippet`, `snippet_tag`, `tag`, `recovery_email_verification_token`가 모두 `1 -> 0`으로 줄고 `attendance_audit_log`는 `NULL/NULL/NULL` 비식별화 상태가 되는 것을 확인했다.
 - 복원 후 scrub rehearsal에서는 `ops_scrub_target`에 대해 runbook 순서와 같은 SQL을 적용해 동일하게 모든 본 데이터가 `0`이 되고 audit row가 `NULL/NULL/NULL` 상태가 되는 것을 확인했다.
@@ -196,11 +196,11 @@
 
 ## 23. 로컬 백업/복원 자동화 rehearsal
 
-- [Invoke-MySqlBackupToS3.ps1](/C:/B_Recheck/scripts/ops/Invoke-MySqlBackupToS3.ps1)와 [Invoke-MySqlRestoreFromS3.ps1](/C:/B_Recheck/scripts/ops/Invoke-MySqlRestoreFromS3.ps1)를 추가해 `docker mysql -> sql dump -> manifest/report -> restore` 흐름을 PowerShell 스크립트로 고정했다.
-- 2026-03-15 03:03 KST에 `-SkipUpload` 기준 백업 rehearsal을 수행해 `C:\B_Recheck\build\ops-backup\bootsync-20260315-030309.sql` dump, manifest, markdown report를 생성했다.
+- [Invoke-MySqlBackupToS3.ps1](../../scripts/ops/Invoke-MySqlBackupToS3.ps1)와 [Invoke-MySqlRestoreFromS3.ps1](../../scripts/ops/Invoke-MySqlRestoreFromS3.ps1)를 추가해 `docker mysql -> sql dump -> manifest/report -> restore` 흐름을 PowerShell 스크립트로 고정했다.
+- 2026-03-15 03:03 KST에 `-SkipUpload` 기준 백업 rehearsal을 수행해 `build/ops-backup/bootsync-20260315-030309.sql` dump, manifest, markdown report를 생성했다.
 - 생성된 dump의 크기는 `13,897 bytes`, SHA-256은 `62CABAFB36A39DE39AB08D2D4C034F89BB3F223F3460296F79EA2EF50DD1CE13`이었다.
 - 2026-03-15 03:05 KST에는 별도 `mysql:8.4` 컨테이너 `bootsync-mysql-restore-test`에 같은 dump를 복원했고, `member = 2`, `attendance_record = 5`, `snippet = 3`으로 원본과 같은 row count를 확인했다.
-- 상세 기록은 [2026-03-15-backup-restore-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)에 남겼다.
+- 상세 기록은 [2026-03-15-backup-restore-rehearsal.md](../reports/ops/2026-03-15-backup-restore-rehearsal.md)에 남겼다.
 - 이번 기록은 로컬 기능 검증이며, 운영 AWS 자격증명으로 실제 `daily/weekly` S3 object가 생성되는지와 prod-like 복원 `RTO 8시간`은 아직 별도 증적이 필요하다.
 
 ## 24. 대시보드 수강 리스크 기능팩 추가
@@ -329,18 +329,18 @@
 
 ## 39. 전체 비교 검증과 문서 정합화 기록
 
-- 2026-03-16 기준으로 [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md), [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md), [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md), [README.md](/C:/B_Recheck/README.md), [final-checkpoint.md](/C:/B_Recheck/docs/reports/checkpoints/final-checkpoint.md)를 다시 읽고 현재 코드/문서 상태를 대조했다.
+- 2026-03-16 기준으로 [BOOTSYNC_SPEC_V2.md](../spec/BOOTSYNC_SPEC_V2.md), [PROJECT_PLAN.md](../planning/PROJECT_PLAN.md), [SPEC_TRACKER.md](../spec/SPEC_TRACKER.md), [README.md](../../README.md), [final-checkpoint.md](../reports/checkpoints/final-checkpoint.md)를 다시 읽고 현재 코드/문서 상태를 대조했다.
 - 이 환경에서는 `git` 명령과 문서 대 코드 스냅샷 비교를 함께 사용해 검증했다.
 - 자동 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat test` 전체 통과로 확인했다.
-- 비교 과정에서 [README.md](/C:/B_Recheck/README.md)에 남아 있던 예전 `오늘 출결` 설명과 `실시일수` 표현을 현재 캘린더 중심 출결 관리 구조와 `수업일` 표현으로 맞춰 정리했다.
-- 문서 허브와 공유용 문서가 최신 상태를 바로 가리키도록 [docs/README.md](/C:/B_Recheck/docs/README.md)와 [2026-03-14-release-note.md](/C:/B_Recheck/docs/reports/releases/2026-03-14-release-note.md)에 새 검증 체크포인트 링크를 추가했다.
+- 비교 과정에서 [README.md](../../README.md)에 남아 있던 예전 `오늘 출결` 설명과 `실시일수` 표현을 현재 캘린더 중심 출결 관리 구조와 `수업일` 표현으로 맞춰 정리했다.
+- 문서 허브와 공유용 문서가 최신 상태를 바로 가리키도록 [docs/README.md](../README.md)와 [2026-03-14-release-note.md](../reports/releases/2026-03-14-release-note.md)에 새 검증 체크포인트 링크를 추가했다.
 
 ## 40. 남은 운영 리스크 축소를 위한 정책/증적/배포 초안 추가
 
-- 정책 문서 공백을 줄이기 위해 [PRIVACY_POLICY_DRAFT.md](/C:/B_Recheck/docs/policies/PRIVACY_POLICY_DRAFT.md), [TERMS_OF_SERVICE_DRAFT.md](/C:/B_Recheck/docs/policies/TERMS_OF_SERVICE_DRAFT.md), [ACCOUNT_DELETION_AND_RECOVERY_POLICY.md](/C:/B_Recheck/docs/policies/ACCOUNT_DELETION_AND_RECOVERY_POLICY.md) 초안을 추가했다.
-- 실제 운영 증적을 바로 남길 수 있도록 [OPERATIONS_EVIDENCE_TEMPLATES.md](/C:/B_Recheck/docs/operations/OPERATIONS_EVIDENCE_TEMPLATES.md)에 SMTP 실메일, purge 첫 실행, S3 업로드, prod-like 복원/RTO 템플릿을 추가했다.
-- AWS 배포 리스크를 `문서만 있음` 단계에서 더 나아가게 하기 위해 [k8s](/C:/B_Recheck/k8s) 폴더에 namespace, configmap, secret example, deployment, service, ingress 초안 매니페스트를 추가했다.
-- [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md), [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md), [README.md](/C:/B_Recheck/README.md), [docs/README.md](/C:/B_Recheck/docs/README.md)에 현재 상태를 반영해 정책 문서는 초안 준비 완료, AWS 배포는 문서/매니페스트 준비 후 실제 실행 대기 상태로 정리했다.
+- 정책 문서 공백을 줄이기 위해 [PRIVACY_POLICY_DRAFT.md](../policies/PRIVACY_POLICY_DRAFT.md), [TERMS_OF_SERVICE_DRAFT.md](../policies/TERMS_OF_SERVICE_DRAFT.md), [ACCOUNT_DELETION_AND_RECOVERY_POLICY.md](../policies/ACCOUNT_DELETION_AND_RECOVERY_POLICY.md) 초안을 추가했다.
+- 실제 운영 증적을 바로 남길 수 있도록 [OPERATIONS_EVIDENCE_TEMPLATES.md](../operations/OPERATIONS_EVIDENCE_TEMPLATES.md)에 SMTP 실메일, purge 첫 실행, S3 업로드, prod-like 복원/RTO 템플릿을 추가했다.
+- AWS 배포 리스크를 `문서만 있음` 단계에서 더 나아가게 하기 위해 [k8s](../../k8s) 폴더에 namespace, configmap, secret example, deployment, service, ingress 초안 매니페스트를 추가했다.
+- [PROJECT_PLAN.md](../planning/PROJECT_PLAN.md), [SPEC_TRACKER.md](../spec/SPEC_TRACKER.md), [README.md](../../README.md), [docs/README.md](../README.md)에 현재 상태를 반영해 정책 문서는 초안 준비 완료, AWS 배포는 문서/매니페스트 준비 후 실제 실행 대기 상태로 정리했다.
 
 ## 41. 모니터링 접근 제어와 문서 기준을 현재 상태로 재정렬
 
@@ -348,7 +348,7 @@
 - `application-local.yml`, `application-test.yml`, `application-prod.yml`에 Prometheus scrape 토큰 구성을 명시했고, 테스트도 `무토큰 401 / 올바른 토큰 200` 기준으로 바꿨다.
 - `k8s/k8s-bootsync/20-secret.example.yaml`에는 앱용 `APP_MONITORING_PROMETHEUS_SCRAPE_TOKEN`을, `k8s/k8s-monitoring/prometheus-scrape-secret.example.yaml`에는 Prometheus 쪽 동일 토큰 템플릿을 추가했다.
 - `k8s/k8s-monitoring/prometheus-config.yaml`과 `prometheus-depl_svc.yaml`은 이 토큰을 `Authorization: Bearer ...`로 붙여 BootSync 앱을 스크랩하도록 갱신했다.
-- [2026-03-16-validation-checkpoint.md](/C:/B_Recheck/docs/reports/checkpoints/2026-03-16-validation-checkpoint.md), [README.md](/C:/B_Recheck/README.md), [k8s/README.md](/C:/B_Recheck/k8s/README.md), [AWS_DEPLOYMENT_CHECKLIST.md](/C:/B_Recheck/docs/planning/AWS_DEPLOYMENT_CHECKLIST.md), [AWS_FINAL_PROJECT_GUIDE.md](/C:/B_Recheck/docs/planning/AWS_FINAL_PROJECT_GUIDE.md), [PROD_ENV_CHECKLIST.md](/C:/B_Recheck/docs/operations/PROD_ENV_CHECKLIST.md), [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)을 현재 보호 방식과 폴더 구조 기준으로 다시 맞췄다.
+- [2026-03-16-validation-checkpoint.md](../reports/checkpoints/2026-03-16-validation-checkpoint.md), [README.md](../../README.md), [k8s/README.md](../../k8s/README.md), [AWS_DEPLOYMENT_CHECKLIST.md](../planning/AWS_DEPLOYMENT_CHECKLIST.md), [AWS_FINAL_PROJECT_GUIDE.md](../planning/AWS_FINAL_PROJECT_GUIDE.md), [PROD_ENV_CHECKLIST.md](../operations/PROD_ENV_CHECKLIST.md), [SPEC_TRACKER.md](../spec/SPEC_TRACKER.md)을 현재 보호 방식과 폴더 구조 기준으로 다시 맞췄다.
 - 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat test`, `.\gradlew.bat compileJava compileTestJava` 통과를 기준으로 한다.
 
 ## 42. Kubernetes health probe 경로를 실제 헬스 응답으로 복구
@@ -370,17 +370,17 @@
 
 ## 44. README 역할 구분을 명확하게 정리
 
-- 루트 [README.md](/C:/B_Recheck/README.md)에 `README 안내` 표를 추가해, 처음 보는 사람도 `프로젝트 전체 안내 / 문서 허브 / Kubernetes 안내` 중 어디를 봐야 하는지 바로 알 수 있게 정리했다.
-- [docs/README.md](/C:/B_Recheck/docs/README.md)에는 `어떤 README를 먼저 볼까` 표를 추가해, 세부 문서 허브와 루트 README, `k8s/README.md`의 역할 차이를 분명히 적었다.
-- [k8s/README.md](/C:/B_Recheck/k8s/README.md) 상단에도 이 문서가 `Kubernetes 전용 안내`라는 설명을 넣어, 로컬 실행 안내와 섞어 읽지 않도록 정리했다.
+- 루트 [README.md](../../README.md)에 `README 안내` 표를 추가해, 처음 보는 사람도 `프로젝트 전체 안내 / 문서 허브 / Kubernetes 안내` 중 어디를 봐야 하는지 바로 알 수 있게 정리했다.
+- [docs/README.md](../README.md)에는 `어떤 README를 먼저 볼까` 표를 추가해, 세부 문서 허브와 루트 README, `k8s/README.md`의 역할 차이를 분명히 적었다.
+- [k8s/README.md](../../k8s/README.md) 상단에도 이 문서가 `Kubernetes 전용 안내`라는 설명을 넣어, 로컬 실행 안내와 섞어 읽지 않도록 정리했다.
 - 이번 변경은 문서 구조 안내만 다룬 작업이라 별도 빌드/테스트는 실행하지 않았다.
 
 ## 45. 과정 현황 출석률 표현과 운영 범위 문구를 현재 구조에 맞춤
 
 - `과정 현황` 화면의 출석률 값은 이미 `현재까지 진행된 수업일` 기준으로 계산되고 있었지만, 화면 라벨이 `전체 과정 출석률`처럼 읽혀 혼동을 줄 수 있어 `현재까지 출석률`로 바꾸고 보조 문구에도 계산 기준을 명시했다.
-- 루트 [README.md](/C:/B_Recheck/README.md)와 [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)도 같은 의미로 표현을 맞춰, 현재 화면과 문서 설명이 어긋나지 않게 정리했다.
-- [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md)의 `v1 제외 기능`에는 Kubernetes를 `제품 기능의 필수 출시 범위는 아님`으로 풀어 쓰고, 대신 `AWS 배포` 준비 과정에서 운영용 매니페스트와 모니터링 템플릿을 저장소에 둘 수 있다는 설명을 추가했다.
-- `member_training_profile`의 구 장려금 컬럼을 제거하는 [V4__drop_legacy_training_profile_allowance_columns.sql](/C:/B_Recheck/src/main/resources/db/migration/V4__drop_legacy_training_profile_allowance_columns.sql)에 정리 목적 주석을 추가해, 새 모델로 전환된 뒤 남은 스키마 정리 단계임을 바로 알 수 있게 했다.
+- 루트 [README.md](../../README.md)와 [SPEC_TRACKER.md](../spec/SPEC_TRACKER.md)도 같은 의미로 표현을 맞춰, 현재 화면과 문서 설명이 어긋나지 않게 정리했다.
+- [BOOTSYNC_SPEC_V2.md](../spec/BOOTSYNC_SPEC_V2.md)의 `v1 제외 기능`에는 Kubernetes를 `제품 기능의 필수 출시 범위는 아님`으로 풀어 쓰고, 대신 `AWS 배포` 준비 과정에서 운영용 매니페스트와 모니터링 템플릿을 저장소에 둘 수 있다는 설명을 추가했다.
+- `member_training_profile`의 구 장려금 컬럼을 제거하는 [V4__drop_legacy_training_profile_allowance_columns.sql](../../src/main/resources/db/migration/V4__drop_legacy_training_profile_allowance_columns.sql)에 정리 목적 주석을 추가해, 새 모델로 전환된 뒤 남은 스키마 정리 단계임을 바로 알 수 있게 했다.
 - 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat compileJava compileTestJava` 통과를 기준으로 한다.
 
 ## 46. 출결 관리 상단 요약 바와 빠른 입력 동선을 재배치
@@ -388,7 +388,7 @@
 - `전체 누적`과 `이번 달 요약`을 오른쪽 세로 카드에서 분리해, 화면 상단의 얇은 가로 요약 바로 옮겼다.
 - 상단 카드 안에서는 두 요약을 좌우 2구역으로 나눠 한 번에 훑을 수 있게 하고, 긴 안내 박스는 줄여 카드 높이가 과도하게 커지지 않도록 정리했다.
 - 오른쪽 영역은 요약 카드 대신 `빠른 수정 패널`만 남겨, 데스크톱에서 `요약 확인 -> 날짜 선택 -> 바로 상태 입력` 흐름이 더 짧아지도록 맞췄다.
-- 루트 [README.md](/C:/B_Recheck/README.md)의 출결 관리 설명도 새 레이아웃에 맞게 상단 요약 바 중심으로 갱신했다.
+- 루트 [README.md](../../README.md)의 출결 관리 설명도 새 레이아웃에 맞게 상단 요약 바 중심으로 갱신했다.
 - 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat compileJava compileTestJava` 통과를 기준으로 한다.
 
 ## 47. 비선택 상태 빠른 수정 패널을 안내형으로 축소
@@ -396,5 +396,5 @@
 - 출결 관리 화면에 처음 들어왔을 때는 날짜를 아직 고르지 않았는데도 `빠른 상태 입력`과 `메모`가 비활성화된 채 길게 보여, 첫 화면 밀도가 떨어지고 불필요한 빈 공간이 커 보였다.
 - 비선택 상태 패널은 이제 `빠른 수정 패널` 설명과 `선택 전 미리보기`만 남기고, 실제 `빠른 상태 입력`과 `메모 저장` 영역은 날짜를 선택했을 때만 열리도록 바꿨다.
 - 데스크톱에서는 비선택 상태 패널 최소 높이도 함께 낮춰, 처음 진입했을 때 오른쪽 패널이 과하게 길어 보이지 않도록 정리했다.
-- 루트 [README.md](/C:/B_Recheck/README.md)에도 날짜 선택 전에는 설명만 보인다는 현재 동작을 반영했다.
+- 루트 [README.md](../../README.md)에도 날짜 선택 전에는 설명만 보인다는 현재 동작을 반영했다.
 - 이번 변경 검증은 `frontend` 기준 `npm run lint`, `npm run build`, 루트 기준 `.\gradlew.bat compileJava compileTestJava` 통과를 기준으로 한다.

@@ -6,9 +6,9 @@
 
 ## 1. 검증 방법
 
-- 기준 문서: [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md), [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md), [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)
-- 사용자/운영 문서: [README.md](/C:/B_Recheck/README.md), [docs/README.md](/C:/B_Recheck/docs/README.md), [k8s/README.md](/C:/B_Recheck/k8s/README.md), [PROD_ENV_CHECKLIST.md](/C:/B_Recheck/docs/operations/PROD_ENV_CHECKLIST.md)
-- 이전 점검 기준: [final-checkpoint.md](/C:/B_Recheck/docs/reports/checkpoints/final-checkpoint.md), [WORK_LOG.md](/C:/B_Recheck/docs/history/WORK_LOG.md)
+- 기준 문서: [BOOTSYNC_SPEC_V2.md](../../spec/BOOTSYNC_SPEC_V2.md), [PROJECT_PLAN.md](../../planning/PROJECT_PLAN.md), [SPEC_TRACKER.md](../../spec/SPEC_TRACKER.md)
+- 사용자/운영 문서: [README.md](../../../README.md), [docs/README.md](../../README.md), [k8s/README.md](../../../k8s/README.md), [PROD_ENV_CHECKLIST.md](../../operations/PROD_ENV_CHECKLIST.md)
+- 이전 점검 기준: [final-checkpoint.md](final-checkpoint.md), [WORK_LOG.md](../../history/WORK_LOG.md)
 - 코드 비교 기준: 현재 `frontend`, 출결/과정 현황/설정 화면, 보안 설정, `k8s` 매니페스트
 
 참고:
@@ -62,11 +62,11 @@
 
 ## 4. 현재 문서와 코드의 정합성 판단
 
-- [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md)의 장려금 규칙(`1일 지급액 × 지급 반영 일수`, 지각/조퇴 3회 환산)은 현재 서비스 계산 방식과 맞는다.
-- [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md)의 `GET /actuator/health` 외 Actuator 내부 제한 원칙에 맞춰 `/actuator/prometheus`는 토큰 보호로 정리했다.
-- [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md)의 우선순위는 여전히 운영 준비(`SMTP`, `AWS 배포`, `S3`, `복원`, 정책 문서`)가 맞다.
-- [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)의 운영/모니터링 상태는 현재 구현과 맞게 Bearer 토큰 보호까지 반영했다.
-- 사용자/운영 문서 쪽에서는 [README.md](/C:/B_Recheck/README.md), [k8s/README.md](/C:/B_Recheck/k8s/README.md), [AWS_DEPLOYMENT_CHECKLIST.md](/C:/B_Recheck/docs/planning/AWS_DEPLOYMENT_CHECKLIST.md), [AWS_FINAL_PROJECT_GUIDE.md](/C:/B_Recheck/docs/planning/AWS_FINAL_PROJECT_GUIDE.md), [PROD_ENV_CHECKLIST.md](/C:/B_Recheck/docs/operations/PROD_ENV_CHECKLIST.md), [WORK_LOG.md](/C:/B_Recheck/docs/history/WORK_LOG.md)의 설명을 현재 구조 기준으로 다시 맞췄다.
+- [BOOTSYNC_SPEC_V2.md](../../spec/BOOTSYNC_SPEC_V2.md)의 장려금 규칙(`1일 지급액 × 지급 반영 일수`, 지각/조퇴 3회 환산)은 현재 서비스 계산 방식과 맞는다.
+- [BOOTSYNC_SPEC_V2.md](../../spec/BOOTSYNC_SPEC_V2.md)의 `GET /actuator/health` 외 Actuator 내부 제한 원칙에 맞춰 `/actuator/prometheus`는 토큰 보호로 정리했다.
+- [PROJECT_PLAN.md](../../planning/PROJECT_PLAN.md)의 우선순위는 여전히 운영 준비(`SMTP`, `AWS 배포`, `S3`, `복원`, 정책 문서`)가 맞다.
+- [SPEC_TRACKER.md](../../spec/SPEC_TRACKER.md)의 운영/모니터링 상태는 현재 구현과 맞게 Bearer 토큰 보호까지 반영했다.
+- 사용자/운영 문서 쪽에서는 [README.md](../../../README.md), [k8s/README.md](../../../k8s/README.md), [AWS_DEPLOYMENT_CHECKLIST.md](../../planning/AWS_DEPLOYMENT_CHECKLIST.md), [AWS_FINAL_PROJECT_GUIDE.md](../../planning/AWS_FINAL_PROJECT_GUIDE.md), [PROD_ENV_CHECKLIST.md](../../operations/PROD_ENV_CHECKLIST.md), [WORK_LOG.md](../../history/WORK_LOG.md)의 설명을 현재 구조 기준으로 다시 맞췄다.
 
 ## 5. 현재 기준 남은 리스크
 

@@ -9,13 +9,13 @@
 
 - 앱 프로필: `local`
 - DB: `docker compose up -d mysql`
-- 실행 스크립트: [Invoke-LocalOpsRehearsals.ps1](/C:/B_Recheck/scripts/ops/Invoke-LocalOpsRehearsals.ps1)
-- 생성 리포트: [local-ops-rehearsal-20260315-023821.md](/C:/B_Recheck/build/ops-rehearsal/local-ops-rehearsal-20260315-023821.md)
+- 실행 스크립트: [Invoke-LocalOpsRehearsals.ps1](../../../scripts/ops/Invoke-LocalOpsRehearsals.ps1)
+- 생성 리포트: `build/ops-rehearsal/local-ops-rehearsal-20260315-023821.md`
 - 로그:
-  - [seed-20260315-023821.log](/C:/B_Recheck/build/ops-rehearsal/logs/seed-20260315-023821.log)
-  - [password-reset-20260315-023821.log](/C:/B_Recheck/build/ops-rehearsal/logs/password-reset-20260315-023821.log)
-  - [purge-20260315-023821.log](/C:/B_Recheck/build/ops-rehearsal/logs/purge-20260315-023821.log)
-  - [scrub-rehearsal-20260315-023821.sql](/C:/B_Recheck/build/ops-rehearsal/scrub-rehearsal-20260315-023821.sql)
+  - `build/ops-rehearsal/logs/seed-20260315-023821.log`
+  - `build/ops-rehearsal/logs/password-reset-20260315-023821.log`
+  - `build/ops-rehearsal/logs/purge-20260315-023821.log`
+  - `build/ops-rehearsal/scrub-rehearsal-20260315-023821.sql`
 
 ## 2. Seed 결과
 
@@ -34,7 +34,7 @@
   - before: `2026-03-15 02:33:28.533007`
   - after: `2026-03-15 02:38:35.685551`
 - 임시 비밀번호 파일:
-  [ops-reset-temp-password-20260315-023821.txt](/C:/B_Recheck/build/ops-rehearsal/ops-reset-temp-password-20260315-023821.txt)
+  `build/ops-rehearsal/ops-reset-temp-password-20260315-023821.txt`
 - runner 로그:
   `BootSync operator password reset completed: memberId=2, username=ops_reset_target, recoveryEmail=op**************@ex*********, actor=local-ops-admin, reason=local password reset rehearsal`
 
@@ -69,7 +69,7 @@
 - 실행 후 카운트:
   - 모든 본 데이터 카운트 `0`
   - audit row 상태: `NULL/NULL/NULL`
-- 적용 SQL은 [scrub-rehearsal-20260315-023821.sql](/C:/B_Recheck/build/ops-rehearsal/scrub-rehearsal-20260315-023821.sql)에 남겼다.
+- 적용 SQL은 `build/ops-rehearsal/scrub-rehearsal-20260315-023821.sql`에 남겼다.
 
 ## 6. 이번 기록으로 닫힌 것
 

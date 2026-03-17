@@ -22,10 +22,10 @@
 
 ### 2.2 현재 BootSync 문서 기준
 
-- 명세는 AWS 단일 클라우드와 완성 가능한 구조를 우선한다. [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md)
-- 현재 개발 단계는 기능보다 운영 준비가 남아 있다. [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md)
-- 아직 `AWS 배포`는 TODO이고, `S3 백업`은 운영 준비가 남아 있다. [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)
-- 앱은 이미 Docker 이미지 빌드가 가능하고, 로컬 backup/restore rehearsal도 존재한다. [README.md](/C:/B_Recheck/README.md) [2026-03-15-backup-restore-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)
+- 명세는 AWS 단일 클라우드와 완성 가능한 구조를 우선한다. [BOOTSYNC_SPEC_V2.md](../spec/BOOTSYNC_SPEC_V2.md)
+- 현재 개발 단계는 기능보다 운영 준비가 남아 있다. [PROJECT_PLAN.md](PROJECT_PLAN.md)
+- 아직 `AWS 배포`는 TODO이고, `S3 백업`은 운영 준비가 남아 있다. [SPEC_TRACKER.md](../spec/SPEC_TRACKER.md)
+- 앱은 이미 Docker 이미지 빌드가 가능하고, 로컬 backup/restore rehearsal도 존재한다. [README.md](../../README.md) [2026-03-15-backup-restore-rehearsal.md](../reports/ops/2026-03-15-backup-restore-rehearsal.md)
 
 ## 3. 현재 의사결정
 
@@ -109,7 +109,7 @@ SMTP 또는 SES
 
 BootSync를 실행 가능한 "포장된 앱 파일"로 만든 결과물이다.
 
-- 현재 레포에는 이미 [Dockerfile](/C:/B_Recheck/Dockerfile)이 있다.
+- 현재 레포에는 이미 [Dockerfile](../../Dockerfile)이 있다.
 - 이 이미지를 로컬에서 만든 뒤 AWS `ECR`에 올리고, Kubernetes가 그 이미지를 가져가서 실행한다.
 - standalone 런타임 이미지는 기본 `SPRING_PROFILES_ACTIVE=prod`로 시작하도록 맞췄다.
 - final stage는 non-root 사용자 `bootsync`로 실행되므로, 운영 컨테이너 기본선도 함께 확보했다.
@@ -118,7 +118,7 @@ BootSync를 실행 가능한 "포장된 앱 파일"로 만든 결과물이다.
 
 운영 배포에서는 MySQL을 앱 컨테이너 안에 넣지 않고 AWS `RDS MySQL`로 분리한다.
 
-- 현재 [docker-compose.yml](/C:/B_Recheck/docker-compose.yml)은 로컬 개발용으로 `mysql + app`를 같이 띄운다.
+- 현재 [docker-compose.yml](../../docker-compose.yml)은 로컬 개발용으로 `mysql + app`를 같이 띄운다.
 - 최종 배포에서는 `app container -> RDS` 구조가 더 적절하다.
 
 ### 6.4 Kubernetes 매니페스트
@@ -139,8 +139,8 @@ DB 내용을 dump 파일로 만들어 S3에 저장하는 것이다.
 
 현재 레포에는 아래 스크립트가 있다.
 
-- [Invoke-MySqlBackupToS3.ps1](/C:/B_Recheck/scripts/ops/Invoke-MySqlBackupToS3.ps1)
-- [Invoke-MySqlRestoreFromS3.ps1](/C:/B_Recheck/scripts/ops/Invoke-MySqlRestoreFromS3.ps1)
+- [Invoke-MySqlBackupToS3.ps1](../../scripts/ops/Invoke-MySqlBackupToS3.ps1)
+- [Invoke-MySqlRestoreFromS3.ps1](../../scripts/ops/Invoke-MySqlRestoreFromS3.ps1)
 
 주의:
 
@@ -398,11 +398,11 @@ Terraform을 지금 모르는 상태라면 아래 순서로 접근한다.
 
 ## 14. 이 문서와 함께 읽을 문서
 
-- [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md)
-- [PROJECT_PLAN.md](/C:/B_Recheck/docs/planning/PROJECT_PLAN.md)
-- [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)
-- [AWS_DEPLOYMENT_CHECKLIST.md](/C:/B_Recheck/docs/planning/AWS_DEPLOYMENT_CHECKLIST.md)
-- [PROD_ENV_CHECKLIST.md](/C:/B_Recheck/docs/operations/PROD_ENV_CHECKLIST.md)
-- [README.md](/C:/B_Recheck/README.md)
-- [OPERATIONS_RUNBOOK.md](/C:/B_Recheck/docs/operations/OPERATIONS_RUNBOOK.md)
-- [2026-03-15-backup-restore-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)
+- [BOOTSYNC_SPEC_V2.md](../spec/BOOTSYNC_SPEC_V2.md)
+- [PROJECT_PLAN.md](PROJECT_PLAN.md)
+- [SPEC_TRACKER.md](../spec/SPEC_TRACKER.md)
+- [AWS_DEPLOYMENT_CHECKLIST.md](AWS_DEPLOYMENT_CHECKLIST.md)
+- [PROD_ENV_CHECKLIST.md](../operations/PROD_ENV_CHECKLIST.md)
+- [README.md](../../README.md)
+- [OPERATIONS_RUNBOOK.md](../operations/OPERATIONS_RUNBOOK.md)
+- [2026-03-15-backup-restore-rehearsal.md](../reports/ops/2026-03-15-backup-restore-rehearsal.md)

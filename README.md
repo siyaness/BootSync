@@ -1,28 +1,77 @@
 # BootSync
 
-BootSync는 Spring Boot 3.x 백엔드와 React `/app` 프론트를 함께 사용하는 실사용형 웹 서비스입니다. 현재는 로그인/회원가입/복구 이메일 검증, 출결 입력, 스니펫 조회·작성·수정·삭제, 설정 흐름까지 최신 React 화면에서 직접 확인할 수 있는 상태입니다.
+BootSync는 대한민국 국비지원 IT 교육과정 훈련생을 위한 출결, 훈련장려금 예상 금액, 학습 스니펫 관리를 한 곳에서 다루는 same-origin 웹 서비스입니다. Spring Boot 3.x 백엔드와 React `/app` 프론트를 함께 사용하며, 기능 구현뿐 아니라 인증, 운영 문서, 모니터링 준비까지 포함한 실사용형 포트폴리오를 목표로 합니다.
 
-## README 안내
+## 현재 상태
+
+- 완료: 회원가입/로그인, recovery email verification, 출결 CRUD, 예상 장려금 계산, 스니펫 CRUD, 설정, 계정 삭제 lifecycle, React `/app` UI, 로컬 테스트
+- 진행 중: AWS 실제 배포, SMTP 실메일 smoke test, S3 업로드 증적, prod-like 복원과 `RTO 8시간` 검증, 정책 문서 확정
+
+## 핵심 기능
+
+- 세션 기반 인증, recovery email verification, rate limit, 계정 상태 재검사
+- 월별 출결 조회/수정/삭제, 과정 정보 기반 `빈 수업일 일괄 출석`
+- `1일 지급액 × 지급 반영 일수` 기준 예상 장려금 계산
+- Markdown 기반 학습 노트와 태그 검색, secret warning 저장 흐름
+- 계정 삭제 요청, 유예 기간, purge runner, 운영자 보조 복구/취소 절차
+- same-origin React `/app` 프론트와 Spring API 결합 구조
+
+## 3단계로 실행
+
+```powershell
+.\gradlew.bat test
+
+cd .\frontend
+npm install
+$env:VITE_BASE_PATH='/app/'
+npm run build
+cd ..
+
+.\gradlew.bat bootRunTestProfile
+```
+
+- 접속 주소: `http://localhost:8080/app`
+- 로컬 데모 계정: `d / d`
+- 위 계정과 `docker-compose.yml`의 기본 자격증명은 로컬/테스트 전용이며, 운영이나 공개 환경에서 재사용하면 안 됩니다.
+
+## 아키텍처 개요
+
+```mermaid
+flowchart LR
+    Browser["Browser<br/>/app + /api"] --> Spring["Spring Boot<br/>Security Session + REST API + Frontend assets"]
+    Spring --> DB["MySQL / H2(test)"]
+    Spring --> Mail["SMTP<br/>Recovery email"]
+    Spring --> Ops["Backup / Purge / Ops runners"]
+    Prom["Prometheus"] --> Spring
+```
+
+## 도메인 기본값
+
+- 이 프로젝트는 현재 국비지원 훈련 과정 도메인에 맞춘 vertical product입니다.
+- [`src/main/resources/application.yml`](src/main/resources/application.yml)의 `app.training`, `app.allowance` 값은 현재 목표 과정 기준 기본값이며, 전역 SaaS 공통 규칙을 뜻하지 않습니다.
+- 실제 앱에서는 사용자별 `내 과정 정보`로 과정 일정과 장려금 규칙을 덮어쓸 수 있습니다.
+
+## 문서 안내
 
 README가 여러 개 보이면 아래 기준으로 보면 됩니다. 처음 들어온 경우에는 이 파일부터 읽는 것을 권장합니다.
 
 | 파일 | 언제 보면 되는지 | 다루는 내용 |
 |---|---|---|
-| [README.md](/C:/B_Recheck/README.md) | 처음 프로젝트를 열었을 때 | 전체 소개, 빠른 시작, 로그인 방법, 현재 사용자 화면 동작 |
-| [docs/README.md](/C:/B_Recheck/docs/README.md) | 세부 문서를 찾고 싶을 때 | 명세, 계획, 운영, 정책, 작업 기록 문서 허브 |
-| [k8s/README.md](/C:/B_Recheck/k8s/README.md) | Kubernetes 배포를 준비할 때 | `k8s-bootsync`, `k8s-monitoring`, `k8s-argocd` 적용 순서와 주의사항 |
+| [README.md](README.md) | 처음 프로젝트를 열었을 때 | 전체 소개, 빠른 시작, 로그인 방법, 현재 사용자 화면 동작 |
+| [docs/README.md](docs/README.md) | 세부 문서를 찾고 싶을 때 | 명세, 계획, 운영, 정책, 작업 기록 문서 허브 |
+| [k8s/README.md](k8s/README.md) | Kubernetes 배포를 준비할 때 | `k8s-bootsync`, `k8s-monitoring`, `k8s-argocd` 적용 순서와 주의사항 |
 
-상세 문서 허브는 [docs/README.md](/C:/B_Recheck/docs/README.md)입니다.
-최종 프로젝트 AWS 방향 가이드는 [AWS_FINAL_PROJECT_GUIDE.md](/C:/B_Recheck/docs/planning/AWS_FINAL_PROJECT_GUIDE.md)에서 확인할 수 있습니다.
-실행용 AWS 배포 체크리스트는 [AWS_DEPLOYMENT_CHECKLIST.md](/C:/B_Recheck/docs/planning/AWS_DEPLOYMENT_CHECKLIST.md)에서 확인할 수 있습니다.
-운영 환경변수 체크리스트는 [PROD_ENV_CHECKLIST.md](/C:/B_Recheck/docs/operations/PROD_ENV_CHECKLIST.md)에서 확인할 수 있습니다.
-운영 증적 템플릿은 [OPERATIONS_EVIDENCE_TEMPLATES.md](/C:/B_Recheck/docs/operations/OPERATIONS_EVIDENCE_TEMPLATES.md)에서 확인할 수 있습니다.
-정책 문서 초안은 [PRIVACY_POLICY_DRAFT.md](/C:/B_Recheck/docs/policies/PRIVACY_POLICY_DRAFT.md), [TERMS_OF_SERVICE_DRAFT.md](/C:/B_Recheck/docs/policies/TERMS_OF_SERVICE_DRAFT.md), [ACCOUNT_DELETION_AND_RECOVERY_POLICY.md](/C:/B_Recheck/docs/policies/ACCOUNT_DELETION_AND_RECOVERY_POLICY.md)에서 확인할 수 있습니다.
-작업 이력은 [WORK_LOG.md](/C:/B_Recheck/docs/history/WORK_LOG.md)에서 확인할 수 있습니다.
-최근 운영 rehearsal 기록은 [2026-03-15-ops-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-ops-rehearsal.md)에서 확인할 수 있습니다.
-최근 백업/복원 rehearsal 기록은 [2026-03-15-backup-restore-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)에서 확인할 수 있습니다.
-운영 점검 절차는 [OPERATIONS_RUNBOOK.md](/C:/B_Recheck/docs/operations/OPERATIONS_RUNBOOK.md)에서 확인할 수 있습니다.
-최근 전체 비교 검증 기록은 [2026-03-16-validation-checkpoint.md](/C:/B_Recheck/docs/reports/checkpoints/2026-03-16-validation-checkpoint.md)에서 확인할 수 있습니다.
+상세 문서 허브는 [docs/README.md](docs/README.md)입니다.
+최종 프로젝트 AWS 방향 가이드는 [AWS_FINAL_PROJECT_GUIDE.md](docs/planning/AWS_FINAL_PROJECT_GUIDE.md)에서 확인할 수 있습니다.
+실행용 AWS 배포 체크리스트는 [AWS_DEPLOYMENT_CHECKLIST.md](docs/planning/AWS_DEPLOYMENT_CHECKLIST.md)에서 확인할 수 있습니다.
+운영 환경변수 체크리스트는 [PROD_ENV_CHECKLIST.md](docs/operations/PROD_ENV_CHECKLIST.md)에서 확인할 수 있습니다.
+운영 증적 템플릿은 [OPERATIONS_EVIDENCE_TEMPLATES.md](docs/operations/OPERATIONS_EVIDENCE_TEMPLATES.md)에서 확인할 수 있습니다.
+정책 문서 초안은 [PRIVACY_POLICY_DRAFT.md](docs/policies/PRIVACY_POLICY_DRAFT.md), [TERMS_OF_SERVICE_DRAFT.md](docs/policies/TERMS_OF_SERVICE_DRAFT.md), [ACCOUNT_DELETION_AND_RECOVERY_POLICY.md](docs/policies/ACCOUNT_DELETION_AND_RECOVERY_POLICY.md)에서 확인할 수 있습니다.
+작업 이력은 [WORK_LOG.md](docs/history/WORK_LOG.md)에서 확인할 수 있습니다.
+최근 운영 rehearsal 기록은 [2026-03-15-ops-rehearsal.md](docs/reports/ops/2026-03-15-ops-rehearsal.md)에서 확인할 수 있습니다.
+최근 백업/복원 rehearsal 기록은 [2026-03-15-backup-restore-rehearsal.md](docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)에서 확인할 수 있습니다.
+운영 점검 절차는 [OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md)에서 확인할 수 있습니다.
+최근 전체 비교 검증 기록은 [2026-03-16-validation-checkpoint.md](docs/reports/checkpoints/2026-03-16-validation-checkpoint.md)에서 확인할 수 있습니다.
 
 ## 포함된 것
 
@@ -80,7 +129,8 @@ docker compose up --build
 ```
 
 - Docker 이미지 빌드 시 `frontend`도 함께 production build 되어 `/app` 정적 자산으로 포함됩니다.
-- Compose 경로는 [docker-compose.yml](/C:/B_Recheck/docker-compose.yml)에서 `SPRING_PROFILES_ACTIVE=local`을 명시하므로 로컬 개발 기준을 유지합니다.
+- Compose 경로는 [docker-compose.yml](docker-compose.yml)에서 `SPRING_PROFILES_ACTIVE=local`을 명시하므로 로컬 개발 기준을 유지합니다.
+- Compose의 DB 계정과 데모 계정은 로컬 개발 편의를 위한 기본값이며, 운영 환경에서는 별도 시크릿과 실사용 계정으로 반드시 교체해야 합니다.
 
 포트가 겹치면:
 
@@ -91,7 +141,7 @@ docker compose up --build
 
 ### 4. 새 React 프론트엔드 확인
 
-새 프론트 소스는 [frontend](/C:/B_Recheck/frontend)에 별도로 유지합니다. React 소스와 Spring 백엔드 코드를 직접 섞지 않고, 빌드 결과물만 `/app` 경로로 붙이는 방식입니다.
+새 프론트 소스는 [frontend](frontend)에 별도로 유지합니다. React 소스와 Spring 백엔드 코드를 직접 섞지 않고, 빌드 결과물만 `/app` 경로로 붙이는 방식입니다.
 
 개발 서버로 프론트만 확인:
 
@@ -122,8 +172,8 @@ cd ..
 - Gradle은 `frontend/dist` 가 있으면 빌드 산출물만 `build/generated-resources/frontend/static/app` 으로 복사해 사용합니다.
 - `frontend/dist` 가 아직 없으면 `/app` 라우트는 프론트 빌드 안내 화면을 보여줍니다.
 - Dockerfile도 이미지 빌드 중 `frontend`를 자동 빌드해 같은 경로로 포함합니다.
-- Kubernetes 매니페스트는 [k8s](/C:/B_Recheck/k8s) 아래 `k8s-bootsync`, `k8s-monitoring`, `k8s-argocd` 구조로 정리돼 있어 앱 배포, Prometheus/Grafana, Argo CD 템플릿을 분리해서 사용할 수 있습니다.
-- 단독 Docker 이미지([Dockerfile](/C:/B_Recheck/Dockerfile))는 배포 실수를 줄이기 위해 기본 `SPRING_PROFILES_ACTIVE=prod`로 시작하고, final stage는 non-root 사용자 `bootsync`로 실행합니다.
+- Kubernetes 매니페스트는 [k8s](k8s) 아래 `k8s-bootsync`, `k8s-monitoring`, `k8s-argocd` 구조로 정리돼 있어 앱 배포, Prometheus/Grafana, Argo CD 템플릿을 분리해서 사용할 수 있습니다.
+- 단독 Docker 이미지([Dockerfile](Dockerfile))는 배포 실수를 줄이기 위해 기본 `SPRING_PROFILES_ACTIVE=prod`로 시작하고, final stage는 non-root 사용자 `bootsync`로 실행합니다.
 - 따라서 이미지를 `docker run`으로 직접 사용할 때는 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`와 운영 메일/도메인 설정, 필요 시 `APP_MONITORING_PROMETHEUS_SCRAPE_TOKEN`까지 함께 넘기는 것을 전제로 합니다.
 - 앱의 `/actuator/prometheus`는 이제 Bearer 토큰이 있어야 응답하며, Kubernetes 예시는 내부 Prometheus가 같은 토큰으로 스크랩하고 외부 Ingress에서는 `/actuator` 경로를 막는 방향으로 작성돼 있습니다.
 - 현재 `/app` 프론트는 세션 확인, 로그인, 회원가입, 출결 조회/수정/삭제, 스니펫 조회/작성/수정/삭제, 설정의 표시 이름/비밀번호/복구 이메일 변경 요청/재발송/계정 삭제 요청까지 실제 백엔드 API를 사용합니다.
@@ -158,10 +208,11 @@ cd ..
 - password: `d`
 
 위 계정은 `local`/`test` 프로필에서만 자동으로 준비되는 데모 계정입니다.
+`BOOTSYNC_DEMO_USERNAME`, `BOOTSYNC_DEMO_PASSWORD`, Compose 기본 DB 비밀번호는 로컬 전용 값이며, 운영/공개 환경에 그대로 사용하면 안 됩니다.
 
 - `.\gradlew.bat bootRunTestProfile`
 - `.\gradlew.bat bootRun --args="--spring.profiles.active=local"`
-- 이 저장소의 기본 [docker-compose.yml](/C:/B_Recheck/docker-compose.yml)처럼 `SPRING_PROFILES_ACTIVE=local`로 띄운 앱
+- 이 저장소의 기본 [docker-compose.yml](docker-compose.yml)처럼 `SPRING_PROFILES_ACTIVE=local`로 띄운 앱
 
 위와 같은 로컬 실행에서는 `d / d`와 샘플 출결/스니펫 데이터가 자동으로 생깁니다.
 
@@ -284,7 +335,7 @@ $env:APP_AUDIT_REQUEST_IP_HMAC_PRUNE_CRON='0 25 3 * * *'
 ```
 
 이 값이 없으면 IP HMAC은 저장하지 않습니다.
-보존/키 회전/실메일 점검/삭제 요청/복구/백업 절차는 [OPERATIONS_RUNBOOK.md](/C:/B_Recheck/docs/operations/OPERATIONS_RUNBOOK.md)를 따릅니다.
+보존/키 회전/실메일 점검/삭제 요청/복구/백업 절차는 [OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md)를 따릅니다.
 
 DB 백업/복원 자동화는 아래 스크립트를 사용합니다.
 
@@ -297,7 +348,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRe
 - 첫 번째 명령은 로컬 검증용으로 dump, manifest, report만 만든다.
 - 두 번째 명령은 `BACKUP_S3_BUCKET`, `AWS_REGION`, 선택적으로 `AWS_PROFILE`이 준비된 운영 환경에서 `daily/`, 일요일 또는 `-ForceWeekly` 시 `weekly/` prefix까지 업로드한다.
 - 현재 스크립트는 `docker exec/cp`로 `bootsync-mysql` 컨테이너를 기준으로 동작하므로, 최종 운영 구성을 `RDS`로 가져갈 때는 실행 위치나 스크립트 입력값을 RDS 기준으로 별도 보완해야 한다.
-- 최근 로컬 rehearsal 기록은 [2026-03-15-backup-restore-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)에 남겼다.
+- 최근 로컬 rehearsal 기록은 [2026-03-15-backup-restore-rehearsal.md](docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)에 남겼다.
 
 운영자 보조 비밀번호 초기화는 기본 비활성화된 maintenance runner로만 수행합니다.
 필요할 때만 아래 값을 일시적으로 주입해 실행하고, 완료 후 바로 제거하세요.
@@ -342,6 +393,6 @@ $env:APP_SECURITY_TRUST_FORWARDED_HEADERS='true'
 
 - 운영 SMTP 실메일 smoke test 실제 수행
 - purge 스케줄 운영 첫 실행 기록 확보
-- AWS 실제 배포 진행 (`ECR -> RDS -> EC2/k3s`), 현재 [k8s](/C:/B_Recheck/k8s) 초안 매니페스트는 준비됨
+- AWS 실제 배포 진행 (`ECR -> RDS -> EC2/k3s`), 현재 [k8s](k8s) 초안 매니페스트는 준비됨
 - 운영 AWS 자격증명으로 S3 업로드 1회 이상과 prod-like 복원/RTO 검증
 - 개인정보 처리방침 / 이용약관 확정

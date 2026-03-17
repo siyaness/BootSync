@@ -86,7 +86,7 @@
 
 ## 7. 함께 보면 좋은 문서
 
-- 현재 상태 요약: [2026-03-16-validation-checkpoint.md](/C:/B_Recheck/docs/reports/checkpoints/2026-03-16-validation-checkpoint.md)
-- 작업 이력: [WORK_LOG.md](/C:/B_Recheck/docs/history/WORK_LOG.md)
-- 구현 추적: [SPEC_TRACKER.md](/C:/B_Recheck/docs/spec/SPEC_TRACKER.md)
-- 기준 명세: [BOOTSYNC_SPEC_V2.md](/C:/B_Recheck/docs/spec/BOOTSYNC_SPEC_V2.md)
+- 현재 상태 요약: [2026-03-16-validation-checkpoint.md](../checkpoints/2026-03-16-validation-checkpoint.md)
+- 작업 이력: [WORK_LOG.md](../../history/WORK_LOG.md)
+- 구현 추적: [SPEC_TRACKER.md](../../spec/SPEC_TRACKER.md)
+- 기준 명세: [BOOTSYNC_SPEC_V2.md](../../spec/BOOTSYNC_SPEC_V2.md)

@@ -307,7 +307,7 @@ $env:APP_ACCOUNT_DELETION_PURGE_RUN_ONCE_REASON='ticket-123 purge rehearsal'
   - 대상 환경
   - `purgedCount`
   - 오류 여부
-- 로컬 rehearsal 예시는 [2026-03-15-ops-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-ops-rehearsal.md)에 남겼다.
+- 로컬 rehearsal 예시는 [2026-03-15-ops-rehearsal.md](../reports/ops/2026-03-15-ops-rehearsal.md)에 남겼다.
 
 ### 운영 첫 활성화 후 기록 원칙
 
@@ -409,15 +409,15 @@ $env:APP_OPERATIONS_PASSWORD_RESET_REASON='ticket-123 password reset assist'
 
 ### 현재 남아 있는 운영 갭
 
-- maintenance runner는 구현돼 있고, 로컬 첫 rehearsal 기록은 [2026-03-15-ops-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-ops-rehearsal.md)에 남겼다.
+- maintenance runner는 구현돼 있고, 로컬 첫 rehearsal 기록은 [2026-03-15-ops-rehearsal.md](../reports/ops/2026-03-15-ops-rehearsal.md)에 남겼다.
 - 공개 출시 전에는 실제 운영 또는 prod-like 환경 기준으로도 결과를 운영 기록에 남겨야 한다.
 
 ## 5. 백업 / 복원 runbook
 
 ### 현재 상태
 
-- [Invoke-MySqlBackupToS3.ps1](/C:/B_Recheck/scripts/ops/Invoke-MySqlBackupToS3.ps1), [Invoke-MySqlRestoreFromS3.ps1](/C:/B_Recheck/scripts/ops/Invoke-MySqlRestoreFromS3.ps1)로 백업/복원 스크립트가 추가됐다.
-- 로컬 backup/restore rehearsal 기록은 [2026-03-15-backup-restore-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)에 남겼다.
+- [Invoke-MySqlBackupToS3.ps1](../../scripts/ops/Invoke-MySqlBackupToS3.ps1), [Invoke-MySqlRestoreFromS3.ps1](../../scripts/ops/Invoke-MySqlRestoreFromS3.ps1)로 백업/복원 스크립트가 추가됐다.
+- 로컬 backup/restore rehearsal 기록은 [2026-03-15-backup-restore-rehearsal.md](../reports/ops/2026-03-15-backup-restore-rehearsal.md)에 남겼다.
 - 현재 스크립트 구현은 `docker exec/cp`로 MySQL 컨테이너를 기준으로 동작하므로, 최종 운영 DB를 `RDS`로 쓸 때는 실행 위치나 스크립트 입력값을 RDS 기준으로 보완해야 한다.
 - 공개 출시 전에는 실제 AWS 자격증명 기준의 S3 업로드 1회 이상과 prod-like 복원/RTO 측정이 별도로 필요하다.
 
@@ -440,22 +440,22 @@ $env:APP_OPERATIONS_PASSWORD_RESET_REASON='ticket-123 password reset assist'
 로컬 검증이나 운영 스케줄러에서는 아래 스크립트를 우선 사용한다.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\B_Recheck\scripts\ops\Invoke-MySqlBackupToS3.ps1 -SkipUpload
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlBackupToS3.ps1 -SkipUpload
 ```
 
 - dump, manifest, markdown report를 `build\ops-backup` 아래에 남긴다.
 - `-SkipUpload`는 로컬 dump/restore rehearsal이나 배포 전 smoke test에 사용한다.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\B_Recheck\scripts\ops\Invoke-MySqlBackupToS3.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlBackupToS3.ps1
 ```
 
 - 운영 환경에서는 `BACKUP_S3_BUCKET`, `AWS_REGION`, 선택적으로 `AWS_PROFILE`을 준비한다.
 - 기본 업로드 경로는 `daily/`이고, 일요일 또는 `-ForceWeekly` 지정 시 `weekly/`도 함께 기록한다.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\B_Recheck\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 -SourceFile C:\path\to\bootsync-YYYYMMDD-HHMMSS.sql
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\B_Recheck\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 -S3Key daily/bootsync-YYYYMMDD-HHMMSS.sql
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 -SourceFile .\build\ops-backup\bootsync-YYYYMMDD-HHMMSS.sql
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 -S3Key daily/bootsync-YYYYMMDD-HHMMSS.sql
 ```
 
 - 복원 로그는 `build\ops-restore\logs` 아래에 남긴다.
@@ -524,7 +524,7 @@ DELETE FROM member WHERE id = ?;
 
 4. 삭제 요청 등록부에 scrub 수행 시각, 수행자, 대상 `member_id`를 남긴다.
 5. scrub이 모두 끝난 뒤에만 앱을 다시 연다.
-- 로컬 rehearsal 예시는 [2026-03-15-ops-rehearsal.md](/C:/B_Recheck/docs/reports/ops/2026-03-15-ops-rehearsal.md)에 남겼다.
+- 로컬 rehearsal 예시는 [2026-03-15-ops-rehearsal.md](../reports/ops/2026-03-15-ops-rehearsal.md)에 남겼다.
 
 ### 복원 후 스모크 테스트
 

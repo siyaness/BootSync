@@ -14,28 +14,28 @@
 ## 실행 명령
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\B_Recheck\scripts\ops\Invoke-MySqlBackupToS3.ps1 -SkipUpload
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlBackupToS3.ps1 -SkipUpload
 ```
 
 ```powershell
 docker run -d --name bootsync-mysql-restore-test -e MYSQL_ROOT_PASSWORD=rootpw -e MYSQL_DATABASE=bootsync -e MYSQL_USER=bootsync -e MYSQL_PASSWORD=restorepw mysql:8.4
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\B_Recheck\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 -SourceFile C:\B_Recheck\build\ops-backup\bootsync-20260315-030309.sql -ContainerName bootsync-mysql-restore-test
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 -SourceFile .\build\ops-backup\bootsync-20260315-030309.sql -ContainerName bootsync-mysql-restore-test
 ```
 
 ## 백업 결과
 
-- dump file: `C:\B_Recheck\build\ops-backup\bootsync-20260315-030309.sql`
+- dump file: `.\build\ops-backup\bootsync-20260315-030309.sql`
 - dump size: `13,897 bytes`
 - SHA-256: `62CABAFB36A39DE39AB08D2D4C034F89BB3F223F3460296F79EA2EF50DD1CE13`
-- manifest: `C:\B_Recheck\build\ops-backup\bootsync-20260315-030309.manifest.json`
-- report: `C:\B_Recheck\build\ops-backup\reports\bootsync-20260315-030309.md`
-- stderr log: `C:\B_Recheck\build\ops-backup\logs\bootsync-20260315-030309-mysqldump.stderr.log`
+- manifest: `.\build\ops-backup\bootsync-20260315-030309.manifest.json`
+- report: `.\build\ops-backup\reports\bootsync-20260315-030309.md`
+- stderr log: `.\build\ops-backup\logs\bootsync-20260315-030309-mysqldump.stderr.log`
 
 ## 복원 결과
 
 - restore target container: `bootsync-mysql-restore-test`
-- source dump: `C:\B_Recheck\build\ops-backup\bootsync-20260315-030309.sql`
-- restore script log root: `C:\B_Recheck\build\ops-restore\logs`
+- source dump: `.\build\ops-backup\bootsync-20260315-030309.sql`
+- restore script log root: `.\build\ops-restore\logs`
 - restored row counts:
   - `member = 2`
   - `attendance_record = 5`
