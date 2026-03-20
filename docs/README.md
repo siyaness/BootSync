@@ -29,6 +29,7 @@ README가 여러 개 보여도 역할은 분리돼 있습니다.
 
 - [OPERATIONS_RUNBOOK.md](operations/OPERATIONS_RUNBOOK.md): 운영 점검, 복구, purge, 백업 절차
 - [PROD_ENV_CHECKLIST.md](operations/PROD_ENV_CHECKLIST.md): 운영 배포에 필요한 환경변수와 maintenance 값 체크리스트
+- [PROD_VALUE_WORKSHEET.md](operations/PROD_VALUE_WORKSHEET.md): AWS 초보 기준으로 1단계 운영값 준비를 천천히 정리하는 작성용 시트
 - [OPERATIONS_EVIDENCE_TEMPLATES.md](operations/OPERATIONS_EVIDENCE_TEMPLATES.md): SMTP, purge, S3, 복원 실측 기록 템플릿
 
 ### 현재 운영 준비 상태
