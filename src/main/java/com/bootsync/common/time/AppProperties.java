@@ -1,5 +1,6 @@
 package com.bootsync.common.time;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -17,13 +18,21 @@ public class AppProperties {
     @NotBlank
     private String timezone = "Asia/Seoul";
 
+    @Valid
     private final Allowance allowance = new Allowance();
+    @Valid
     private final AccountDeletion accountDeletion = new AccountDeletion();
+    @Valid
     private final Audit audit = new Audit();
+    @Valid
     private final Security security = new Security();
+    @Valid
     private final Monitoring monitoring = new Monitoring();
+    @Valid
     private final Operations operations = new Operations();
+    @Valid
     private final RecoveryEmail recoveryEmail = new RecoveryEmail();
+    @Valid
     private final Training training = new Training();
 
     public String getTimezone() {
@@ -172,6 +181,7 @@ public class AppProperties {
         @NotBlank
         private String purgeCron = "0 15 3 * * *";
 
+        @Valid
         private final PurgeRunOnce purgeRunOnce = new PurgeRunOnce();
 
         public boolean isPurgeEnabled() {
@@ -281,7 +291,9 @@ public class AppProperties {
 
     public static class Operations {
 
+        @Valid
         private final DeletionCancel deletionCancel = new DeletionCancel();
+        @Valid
         private final PasswordReset passwordReset = new PasswordReset();
 
         public DeletionCancel getDeletionCancel() {

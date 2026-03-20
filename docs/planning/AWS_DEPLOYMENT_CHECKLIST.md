@@ -325,6 +325,23 @@ kubectl apply -f k8s/k8s-monitoring/prometheus-depl_svc.yaml
 - 운영 AWS 자격증명 기준 S3 업로드 1회
 - prod-like 복원 리허설 1회와 `RTO 8시간` 실측
 
+운영 S3 업로드와 복원 rehearsal은 RDS 기준으로 아래처럼 남긴다.
+
+```powershell
+$env:DB_URL='jdbc:mysql://bootsync-db.xxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com:3306/bootsync?useSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8'
+$env:DB_PASSWORD='<DB_PASSWORD>'
+$env:MYSQL_SSL_MODE='REQUIRED'
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlBackupToS3.ps1 `
+  -Mode Tcp `
+  -MySqlPasswordEnvVarName DB_PASSWORD
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 `
+  -Mode Tcp `
+  -MySqlPasswordEnvVarName DB_PASSWORD `
+  -S3Key daily/bootsync-YYYYMMDD-HHMMSS.sql
+```
+
 ## 14. 실패 시 우선 확인 순서
 
 1. pod 로그에서 `DB_URL`, `MAIL_*` 누락 여부

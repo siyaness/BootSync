@@ -34,13 +34,13 @@ public class PrometheusScrapeTokenFilter extends OncePerRequestFilter {
         String authorization = request.getHeader("Authorization");
         String expectedToken = appProperties.getMonitoring().getPrometheusScrapeToken();
 
-        if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
+        if (authorization == null || !authorization.startsWith(BEARER_PREFIX) || expectedToken == null || expectedToken.isBlank()) {
             reject(response);
             return;
         }
 
         String actualToken = authorization.substring(BEARER_PREFIX.length());
-        if (!tokensEqual(expectedToken, actualToken)) {
+        if (actualToken.isBlank() || !tokensEqual(expectedToken, actualToken)) {
             reject(response);
             return;
         }

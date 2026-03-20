@@ -2,10 +2,18 @@
 param(
     [string]$ProjectRoot,
     [string]$BackupDir,
+    [ValidateSet('docker', 'tcp')]
+    [string]$Mode = 'docker',
     [string]$ContainerName = 'bootsync-mysql',
     [string]$DatabaseName = 'bootsync',
-    [string]$MySqlUser = 'bootsync',
+    [string]$MySqlUser = $(if ([string]::IsNullOrWhiteSpace($env:DB_USERNAME)) { 'bootsync' } else { $env:DB_USERNAME }),
+    [AllowEmptyString()]
+    [string]$MySqlPassword,
     [string]$MySqlPasswordEnvVarName = 'MYSQL_PASSWORD',
+    [string]$DbHost,
+    [int]$DbPort = 3306,
+    [string]$DbUrl = $env:DB_URL,
+    [string]$MySqlSslMode = $env:MYSQL_SSL_MODE,
     [string]$Bucket = $env:BACKUP_S3_BUCKET,
     [string]$AwsRegion = $env:AWS_REGION,
     [string]$AwsProfile = $env:AWS_PROFILE,
@@ -103,7 +111,8 @@ function Invoke-ExternalCommand {
         [string]$FilePath,
         [string[]]$ArgumentList,
         [string]$StandardOutputPath,
-        [string]$StandardErrorPath
+        [string]$StandardErrorPath,
+        [hashtable]$EnvironmentVariables = @{}
     )
 
     Remove-Item -Path $StandardOutputPath, $StandardErrorPath -Force -ErrorAction SilentlyContinue
@@ -115,6 +124,10 @@ function Invoke-ExternalCommand {
     $startInfo.RedirectStandardError = $true
     $startInfo.UseShellExecute = $false
     $startInfo.CreateNoWindow = $true
+
+    foreach ($entry in $EnvironmentVariables.GetEnumerator()) {
+        $startInfo.Environment[$entry.Key] = [string]$entry.Value
+    }
 
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $startInfo
@@ -152,7 +165,112 @@ function Invoke-AwsS3Copy {
     }
 }
 
-Require-Command -Name 'docker'
+function Get-EnvironmentValue {
+    param(
+        [string]$Name
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Name)) {
+        return $null
+    }
+
+    $environmentItem = Get-Item -Path "Env:$Name" -ErrorAction SilentlyContinue
+    if ($null -eq $environmentItem) {
+        return $null
+    }
+
+    return [string]$environmentItem.Value
+}
+
+function Resolve-MySqlPassword {
+    param(
+        [bool]$PasswordProvided,
+        [AllowEmptyString()]
+        [string]$ExplicitPassword,
+        [string]$EnvVarName
+    )
+
+    if ($PasswordProvided) {
+        return $ExplicitPassword
+    }
+
+    $envPassword = Get-EnvironmentValue -Name $EnvVarName
+    if ($null -ne $envPassword) {
+        return $envPassword
+    }
+
+    $dbPassword = Get-EnvironmentValue -Name 'DB_PASSWORD'
+    if ($null -ne $dbPassword) {
+        return $dbPassword
+    }
+
+    throw "tcp 모드에서는 MySQL 비밀번호가 필요합니다. -MySqlPassword 또는 환경변수 $EnvVarName, DB_PASSWORD를 준비하세요."
+}
+
+function Parse-JdbcMySqlUrl {
+    param(
+        [string]$JdbcUrl
+    )
+
+    if ([string]::IsNullOrWhiteSpace($JdbcUrl)) {
+        return $null
+    }
+
+    $match = [regex]::Match($JdbcUrl.Trim(), '^jdbc:mysql://(?<host>[^:/?#]+)(:(?<port>\d+))?/(?<database>[^?;]+)')
+    if (-not $match.Success) {
+        return $null
+    }
+
+    $port = if ($match.Groups['port'].Success) { [int]$match.Groups['port'].Value } else { 3306 }
+    return @{
+        host = $match.Groups['host'].Value
+        port = $port
+        database = $match.Groups['database'].Value
+    }
+}
+
+function Resolve-TcpConnection {
+    param(
+        [string]$HostName,
+        [int]$PortNumber,
+        [string]$JdbcUrl,
+        [string]$DefaultDatabaseName
+    )
+
+    $parsed = Parse-JdbcMySqlUrl -JdbcUrl $JdbcUrl
+    $resolvedHost = $HostName
+    $resolvedPort = $PortNumber
+    $resolvedDatabaseName = $DefaultDatabaseName
+
+    if ([string]::IsNullOrWhiteSpace($resolvedHost) -and $null -ne $parsed) {
+        $resolvedHost = $parsed.host
+        if ($PortNumber -eq 3306) {
+            $resolvedPort = $parsed.port
+        }
+        if ([string]::IsNullOrWhiteSpace($DefaultDatabaseName) -and -not [string]::IsNullOrWhiteSpace($parsed.database)) {
+            $resolvedDatabaseName = $parsed.database
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($resolvedHost)) {
+        throw 'tcp 모드에서는 -DbHost 또는 DB_URL 환경변수가 필요합니다.'
+    }
+
+    return @{
+        host = $resolvedHost
+        port = $resolvedPort
+        database = $resolvedDatabaseName
+    }
+}
+
+$passwordProvided = $PSBoundParameters.ContainsKey('MySqlPassword')
+
+if ($Mode -eq 'docker') {
+    Require-Command -Name 'docker'
+} else {
+    Require-Command -Name 'mysqldump'
+}
+
 if (-not $SkipUpload) {
     Require-Command -Name 'aws'
     if ([string]::IsNullOrWhiteSpace($Bucket)) {
@@ -176,29 +294,84 @@ $cleanupStderrPath = Join-Path $logRoot "$fileBase-cleanup.stderr.log"
 $manifestPath = Join-Path $backupRoot "$fileBase.manifest.json"
 $reportPath = Join-Path $reportRoot "$fileBase.md"
 
-$passwordReference = '$' + $MySqlPasswordEnvVarName
-$dumpCommand = "exec mysqldump -u$MySqlUser -p`"$passwordReference`" --databases $DatabaseName --single-transaction --routines --triggers --set-gtid-purged=OFF --default-character-set=utf8mb4 --no-tablespaces > $containerDumpPath"
+$reportTargetLabel = $ContainerName
+$reportTargetType = 'container'
+$connectionMetadata = @{
+    mode = $Mode
+    containerName = $null
+    dbHost = $null
+    dbPort = $null
+    mySqlSslMode = $null
+}
 
-Invoke-ExternalCommand `
-    -FilePath 'docker' `
-    -ArgumentList @('exec', $ContainerName, 'sh', '-lc', $dumpCommand) `
-    -StandardOutputPath $dumpStdoutPath `
-    -StandardErrorPath $dumpStderrPath
+if ($Mode -eq 'docker') {
+    $passwordReference = '$' + $MySqlPasswordEnvVarName
+    $dumpCommand = "exec mysqldump -u$MySqlUser -p`"$passwordReference`" --databases $DatabaseName --single-transaction --routines --triggers --set-gtid-purged=OFF --default-character-set=utf8mb4 --no-tablespaces > $containerDumpPath"
 
-Invoke-ExternalCommand `
-    -FilePath 'docker' `
-    -ArgumentList @('cp', "${ContainerName}:$containerDumpPath", $dumpPath) `
-    -StandardOutputPath $copyStdoutPath `
-    -StandardErrorPath $copyStderrPath
-
-try {
     Invoke-ExternalCommand `
         -FilePath 'docker' `
-        -ArgumentList @('exec', $ContainerName, 'rm', '-f', $containerDumpPath) `
-        -StandardOutputPath $cleanupStdoutPath `
-        -StandardErrorPath $cleanupStderrPath
-} catch {
-    Write-Warning "컨테이너 임시 덤프 파일 정리에 실패했습니다: $containerDumpPath"
+        -ArgumentList @('exec', $ContainerName, 'sh', '-lc', $dumpCommand) `
+        -StandardOutputPath $dumpStdoutPath `
+        -StandardErrorPath $dumpStderrPath
+
+    Invoke-ExternalCommand `
+        -FilePath 'docker' `
+        -ArgumentList @('cp', "${ContainerName}:$containerDumpPath", $dumpPath) `
+        -StandardOutputPath $copyStdoutPath `
+        -StandardErrorPath $copyStderrPath
+
+    try {
+        Invoke-ExternalCommand `
+            -FilePath 'docker' `
+            -ArgumentList @('exec', $ContainerName, 'rm', '-f', $containerDumpPath) `
+            -StandardOutputPath $cleanupStdoutPath `
+            -StandardErrorPath $cleanupStderrPath
+    } catch {
+        Write-Warning "컨테이너 임시 덤프 파일 정리에 실패했습니다: $containerDumpPath"
+    }
+
+    $connectionMetadata.containerName = $ContainerName
+} else {
+    $resolvedPassword = Resolve-MySqlPassword `
+        -PasswordProvided $passwordProvided `
+        -ExplicitPassword $MySqlPassword `
+        -EnvVarName $MySqlPasswordEnvVarName
+    $connection = Resolve-TcpConnection `
+        -HostName $DbHost `
+        -PortNumber $DbPort `
+        -JdbcUrl $DbUrl `
+        -DefaultDatabaseName $DatabaseName
+
+    $dumpArguments = @(
+        "--host=$($connection.host)",
+        "--port=$($connection.port)",
+        "--user=$MySqlUser",
+        '--databases',
+        $connection.database,
+        '--single-transaction',
+        '--routines',
+        '--triggers',
+        '--set-gtid-purged=OFF',
+        '--default-character-set=utf8mb4',
+        '--no-tablespaces',
+        "--result-file=$dumpPath"
+    )
+    if (-not [string]::IsNullOrWhiteSpace($MySqlSslMode)) {
+        $dumpArguments += "--ssl-mode=$MySqlSslMode"
+    }
+
+    Invoke-ExternalCommand `
+        -FilePath 'mysqldump' `
+        -ArgumentList $dumpArguments `
+        -StandardOutputPath $dumpStdoutPath `
+        -StandardErrorPath $dumpStderrPath `
+        -EnvironmentVariables @{ MYSQL_PWD = $resolvedPassword }
+
+    $reportTargetType = 'endpoint'
+    $reportTargetLabel = "$($connection.host):$($connection.port)"
+    $connectionMetadata.dbHost = $connection.host
+    $connectionMetadata.dbPort = $connection.port
+    $connectionMetadata.mySqlSslMode = if ([string]::IsNullOrWhiteSpace($MySqlSslMode)) { $null } else { $MySqlSslMode }
 }
 
 $dumpFile = Get-Item -Path $dumpPath
@@ -211,7 +384,11 @@ $shouldWriteWeekly = $ForceWeekly -or (Get-Date).DayOfWeek -eq [System.DayOfWeek
 
 $manifest = [ordered]@{
     createdAt = (Get-Date).ToString('o')
-    containerName = $ContainerName
+    mode = $Mode
+    containerName = $connectionMetadata.containerName
+    dbHost = $connectionMetadata.dbHost
+    dbPort = $connectionMetadata.dbPort
+    mySqlSslMode = $connectionMetadata.mySqlSslMode
     databaseName = $DatabaseName
     mysqlUser = $MySqlUser
     dumpPath = $dumpPath
@@ -288,7 +465,8 @@ $reportLines = [System.Collections.Generic.List[string]]::new()
 $reportLines.Add('# BootSync Backup Automation Report')
 $reportLines.Add('')
 $reportLines.Add("- executed_at: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')")
-$reportLines.Add("- container: $ContainerName")
+$reportLines.Add("- mode: $Mode")
+$reportLines.Add("- ${reportTargetType}: $reportTargetLabel")
 $reportLines.Add("- database: $DatabaseName")
 $reportLines.Add("- dump_path: $dumpPath")
 $reportLines.Add("- dump_size_bytes: $($dumpFile.Length)")
@@ -297,6 +475,9 @@ $reportLines.Add("- manifest_path: $manifestPath")
 $reportLines.Add("- dump_stderr_log: $dumpStderrPath")
 $reportLines.Add("- upload_status: $(if ($SkipUpload) { 'SKIPPED' } else { 'COMPLETED' })")
 $reportLines.Add("- weekly_copy: $(if ($shouldWriteWeekly) { 'YES' } else { 'NO' })")
+if ($Mode -eq 'tcp' -and -not [string]::IsNullOrWhiteSpace($MySqlSslMode)) {
+    $reportLines.Add("- mysql_ssl_mode: $MySqlSslMode")
+}
 
 if ($uploadedObjects.Count -gt 0) {
     $reportLines.Add('')

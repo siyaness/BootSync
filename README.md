@@ -375,11 +375,14 @@ DB 백업/복원 자동화는 아래 스크립트를 사용합니다.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlBackupToS3.ps1 -SkipUpload
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlBackupToS3.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 -SourceFile .\build\ops-backup\bootsync-YYYYMMDD-HHMMSS.sql
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlBackupToS3.ps1 -Mode Tcp -MySqlPasswordEnvVarName DB_PASSWORD
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 -Mode Tcp -MySqlPasswordEnvVarName DB_PASSWORD -S3Key daily/bootsync-YYYYMMDD-HHMMSS.sql
 ```
 
 - 첫 번째 명령은 로컬 검증용으로 dump, manifest, report만 만든다.
 - 두 번째 명령은 `BACKUP_S3_BUCKET`, `AWS_REGION`, 선택적으로 `AWS_PROFILE`이 준비된 운영 환경에서 `daily/`, 일요일 또는 `-ForceWeekly` 시 `weekly/` prefix까지 업로드한다.
-- 현재 스크립트는 `docker exec/cp`로 `bootsync-mysql` 컨테이너를 기준으로 동작하므로, 최종 운영 구성을 `RDS`로 가져갈 때는 실행 위치나 스크립트 입력값을 RDS 기준으로 별도 보완해야 한다.
+- 기본값은 로컬 Compose/MySQL rehearsal용 `docker` 모드다.
+- 운영 RDS 백업/복원은 `tcp` 모드로 실행하며, `mysqldump/mysql` 클라이언트와 `DB_URL`, `DB_PASSWORD`, 권장 `MYSQL_SSL_MODE=REQUIRED`를 준비한다.
 - 최근 로컬 rehearsal 기록은 [2026-03-15-backup-restore-rehearsal.md](docs/reports/ops/2026-03-15-backup-restore-rehearsal.md)에 남겼다.
 
 운영자 보조 비밀번호 초기화는 기본 비활성화된 maintenance runner로만 수행합니다.

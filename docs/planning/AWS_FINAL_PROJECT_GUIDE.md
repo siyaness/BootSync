@@ -144,9 +144,9 @@ DB 내용을 dump 파일로 만들어 S3에 저장하는 것이다.
 
 주의:
 
-- 현재 스크립트는 `docker mysql 컨테이너` 기준 로컬 rehearsal용으로 먼저 만들어졌다.
-- 최종 운영이 `RDS`가 되면, 이 스크립트는 `RDS endpoint 대상으로 mysqldump` 하도록 추가 보완이 필요하다.
-- 즉, 지금 스크립트는 "출발점"이고 "최종 AWS 운영형 완성본"은 아니다.
+- 현재 스크립트는 `-Mode docker`와 `-Mode tcp`를 모두 지원한다.
+- 로컬 rehearsal은 `docker` 모드, AWS/RDS 운영 백업과 복원 rehearsal은 `tcp` 모드로 실행한다.
+- 남은 일은 스크립트 구현보다 `운영 AWS 자격증명 기준 S3 업로드 1회`, `prod-like 복원 리허설`, `RTO 8시간` 실측이다.
 
 ## 7. EC2+k3s vs EKS 비교
 

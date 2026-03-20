@@ -119,11 +119,14 @@
 | `BACKUP_S3_BUCKET` | S3 업로드 시 필수 | 백업 버킷 이름 |
 | `AWS_REGION` | S3 업로드 시 필수 | AWS 리전 |
 | `AWS_PROFILE` | 선택 | 로컬 또는 운영 CLI profile |
+| `MYSQL_SSL_MODE` | TCP 모드에서 선택 | `mysqldump/mysql`의 SSL 모드 (`REQUIRED` 권장) |
 
 주의:
 
-- 현재 [Invoke-MySqlBackupToS3.ps1](../../scripts/ops/Invoke-MySqlBackupToS3.ps1)와 [Invoke-MySqlRestoreFromS3.ps1](../../scripts/ops/Invoke-MySqlRestoreFromS3.ps1)는 `docker exec/cp`로 MySQL 컨테이너를 기준으로 동작한다.
-- 최종 운영 DB가 `RDS`라면, 이 값들만 넣는다고 바로 운영 백업이 완성되는 것은 아니다.
+- 현재 [Invoke-MySqlBackupToS3.ps1](../../scripts/ops/Invoke-MySqlBackupToS3.ps1)와 [Invoke-MySqlRestoreFromS3.ps1](../../scripts/ops/Invoke-MySqlRestoreFromS3.ps1)는 `-Mode docker`와 `-Mode tcp`를 모두 지원한다.
+- 로컬 Compose/MySQL rehearsal은 기본 `docker` 모드를, 최종 `RDS` 운영 백업/복원은 `tcp` 모드를 사용한다.
+- `tcp` 모드에서는 실행 위치에 `mysqldump`, `mysql` 클라이언트가 필요하고, `-DbHost/-DbPort` 또는 `DB_URL`, `-MySqlPassword` 또는 `DB_PASSWORD`/`-MySqlPasswordEnvVarName` 중 하나가 준비돼야 한다.
+- RDS에서는 `MYSQL_SSL_MODE=REQUIRED` 또는 `-MySqlSslMode REQUIRED`처럼 SSL 모드를 명시하는 편을 권장한다.
 
 ## 9. prod 예시 템플릿
 

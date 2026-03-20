@@ -439,7 +439,8 @@ $env:APP_OPERATIONS_PASSWORD_RESET_REASON='ticket-123 password reset assist'
 
 - [Invoke-MySqlBackupToS3.ps1](../../scripts/ops/Invoke-MySqlBackupToS3.ps1), [Invoke-MySqlRestoreFromS3.ps1](../../scripts/ops/Invoke-MySqlRestoreFromS3.ps1)로 백업/복원 스크립트가 추가됐다.
 - 로컬 backup/restore rehearsal 기록은 [2026-03-15-backup-restore-rehearsal.md](../reports/ops/2026-03-15-backup-restore-rehearsal.md)에 남겼다.
-- 현재 스크립트 구현은 `docker exec/cp`로 MySQL 컨테이너를 기준으로 동작하므로, 최종 운영 DB를 `RDS`로 쓸 때는 실행 위치나 스크립트 입력값을 RDS 기준으로 보완해야 한다.
+- 현재 스크립트는 `-Mode docker`와 `-Mode tcp`를 모두 지원한다.
+- 로컬 Compose/MySQL rehearsal은 기본 `docker` 모드, 최종 RDS 운영 백업/복원은 `tcp` 모드를 사용한다.
 - 공개 출시 전에는 운영 AWS 자격증명 기준 S3 업로드 1회와 일일 스케줄 배치, prod-like 복원 리허설과 `RTO 8시간` 실측이 별도로 필요하다.
 
 ### 목표 기준
@@ -474,6 +475,21 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlBa
 - 운영 환경에서는 `BACKUP_S3_BUCKET`, `AWS_REGION`, 선택적으로 `AWS_PROFILE`을 준비한다.
 - 기본 업로드 경로는 `daily/`이고, 일요일 또는 `-ForceWeekly` 지정 시 `weekly/`도 함께 기록한다.
 
+RDS나 외부 MySQL endpoint를 직접 대상으로 할 때는 `tcp` 모드를 사용한다.
+
+```powershell
+$env:DB_URL='jdbc:mysql://bootsync-db.xxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com:3306/bootsync?useSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8'
+$env:DB_PASSWORD='<DB_PASSWORD>'
+$env:MYSQL_SSL_MODE='REQUIRED'
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlBackupToS3.ps1 `
+  -Mode Tcp `
+  -MySqlPasswordEnvVarName DB_PASSWORD
+```
+
+- `tcp` 모드는 실행 위치에 `mysqldump` 클라이언트가 필요하다.
+- `DB_URL`이 준비돼 있으면 host/port를 자동 해석하고, 없으면 `-DbHost`, `-DbPort`를 직접 넘긴다.
+
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 -SourceFile .\build\ops-backup\bootsync-YYYYMMDD-HHMMSS.sql
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 -S3Key daily/bootsync-YYYYMMDD-HHMMSS.sql
@@ -481,6 +497,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRe
 
 - 복원 로그는 `build\ops-restore\logs` 아래에 남긴다.
 - 실제 서비스 reopen 전에는 아래 scrub 순서와 smoke test를 반드시 이어서 수행한다.
+
+```powershell
+$env:DB_URL='jdbc:mysql://bootsync-db.xxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com:3306/bootsync?useSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8'
+$env:DB_PASSWORD='<DB_PASSWORD>'
+$env:MYSQL_SSL_MODE='REQUIRED'
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlRestoreFromS3.ps1 `
+  -Mode Tcp `
+  -MySqlPasswordEnvVarName DB_PASSWORD `
+  -S3Key daily/bootsync-YYYYMMDD-HHMMSS.sql
+```
+
+- `tcp` 복원은 실행 위치에 `mysql` 클라이언트가 필요하다.
 
 ### 수동 백업 예시
 
@@ -492,6 +521,18 @@ New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
 docker exec bootsync-mysql sh -lc 'exec mysqldump -ubootsync -p"$MYSQL_PASSWORD" --databases bootsync --single-transaction --routines --triggers --set-gtid-purged=OFF --default-character-set=utf8mb4' > "$backupDir\\bootsync-$timestamp.sql"
 
 aws s3 cp "$backupDir\\bootsync-$timestamp.sql" "s3://$env:BACKUP_S3_BUCKET/daily/bootsync-$timestamp.sql" --region $env:AWS_REGION
+```
+
+RDS 직접 dump가 필요하면 아래처럼 동일 스크립트의 `tcp` 모드를 사용한다.
+
+```powershell
+$env:DB_URL='jdbc:mysql://bootsync-db.xxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com:3306/bootsync?useSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8'
+$env:DB_PASSWORD='<DB_PASSWORD>'
+$env:MYSQL_SSL_MODE='REQUIRED'
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ops\Invoke-MySqlBackupToS3.ps1 `
+  -Mode Tcp `
+  -MySqlPasswordEnvVarName DB_PASSWORD
 ```
 
 ### 백업 성공 후 확인 항목
