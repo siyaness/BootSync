@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/lib/store';
 import { formatKRW } from '@/lib/display';
+import { getCurrentSeoulDateInfo } from '@/lib/seoul-time';
 import { CalendarCheck, AlertTriangle, ChevronDown, ChevronUp, Info } from 'lucide-react';
 
 export default function AllowancePage() {
@@ -9,9 +10,9 @@ export default function AllowancePage() {
   const { getAllowanceSummaryForMonth, loadAttendanceMonth } = useApp();
   const [rulesOpen, setRulesOpen] = useState(false);
 
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth();
+  const today = getCurrentSeoulDateInfo();
+  const currentYear = today.year;
+  const currentMonth = today.monthIndex;
   const allowanceSummary = getAllowanceSummaryForMonth(currentYear, currentMonth);
 
   useEffect(() => {

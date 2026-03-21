@@ -4,6 +4,7 @@ import { AppApiError } from '@/lib/api';
 import { useApp } from '@/lib/store';
 import { formatCourseCountdown } from '@/lib/attendance-insights';
 import { getKoreanDateString, getRelativeTime, formatKRW } from '@/lib/display';
+import { compareApiDateTimesDesc, getCurrentSeoulDateInfo } from '@/lib/seoul-time';
 import {
   CalendarCheck, Code2, ArrowRight, Plus, AlertTriangle, Mail,
   CheckCircle2, Clock, XCircle, MinusCircle, ChevronRight, Zap,
@@ -67,10 +68,10 @@ export default function DashboardPage() {
     };
   }, [resendLockedUntil]);
 
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth();
-  const todayStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const today = getCurrentSeoulDateInfo();
+  const currentYear = today.year;
+  const currentMonth = today.monthIndex;
+  const todayStr = today.dateString;
   const todayRecord = attendance.find(r => r.date === todayStr);
 
   useEffect(() => {
@@ -115,7 +116,7 @@ export default function DashboardPage() {
   const totalDays = monthlySummary.presentCount + monthlySummary.lateCount + monthlySummary.leaveEarlyCount + monthlySummary.absentCount;
   const attendanceRate = totalDays > 0 ? Math.round((monthlySummary.presentCount / totalDays) * 100) : 0;
   const courseCountdown = trainingSummary ? formatCourseCountdown(trainingSummary.daysUntilCourseEnd) : null;
-  const recentSnippets = [...snippets].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 3);
+  const recentSnippets = [...snippets].sort((a, b) => compareApiDateTimesDesc(a.updatedAt, b.updatedAt)).slice(0, 3);
   const lateHint = getNextProgressHint('지각', monthlySummary.lateCount);
   const leaveEarlyHint = getNextProgressHint('조퇴', monthlySummary.leaveEarlyCount);
 
@@ -277,7 +278,7 @@ export default function DashboardPage() {
           <div className="bg-[#FDFCFB] rounded-xl border border-[#E2E4DF] shadow-[0_1px_3px_rgba(30,42,58,0.06)] p-5 hover:shadow-[0_4px_12px_rgba(30,42,58,0.08)] transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[15px] font-semibold text-[#1E2A3A]">
-                {today.getMonth() + 1}월 출결 요약
+                {currentMonth + 1}월 출결 요약
               </h3>
               <Link to="/attendance" className="text-[#3D7A8A] text-sm hover:underline flex items-center gap-1">
                 전체 보기 <ChevronRight className="w-3.5 h-3.5" />

@@ -12,6 +12,7 @@ import type {
   TrainingSummary,
   User,
 } from "@/lib/app-types";
+import { compareApiDateTimesDesc, formatYearMonth, getCurrentSeoulDateInfo } from "@/lib/seoul-time";
 
 type StoredAttendanceRecord = AttendanceRecord & { id: string };
 
@@ -154,8 +155,11 @@ const EMPTY_RECOVERY_EMAIL_STATUS: RecoveryEmailStatus = {
 
 const AppContext = createContext<AppState | null>(null);
 
-function formatYearMonth(year: number, month: number) {
-  return `${year}-${String(month + 1).padStart(2, "0")}`;
+function normalizeLogoutReason(code: string | undefined) {
+  if (code === "pending_delete" || code === "inactive_account" || code === "session_expired") {
+    return code;
+  }
+  return "session_expired";
 }
 
 function mapUser(session: SessionResponse): User {
@@ -211,6 +215,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTrainingProfile(null);
   }, []);
 
+  const redirectToLoginWithReason = useCallback((reason: string) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    if (currentPath.startsWith("/app/login")) {
+      return;
+    }
+
+    const loginUrl = new URL("/app/login", window.location.origin);
+    loginUrl.searchParams.set("reason", reason);
+
+    if (reason === "session_expired" && window.location.pathname.startsWith("/app")) {
+      const nextPath = `${window.location.pathname.slice("/app".length) || "/"}${window.location.search}`;
+      if (nextPath.startsWith("/")) {
+        loginUrl.searchParams.set("next", nextPath);
+      }
+    }
+
+    window.location.assign(loginUrl.toString());
+  }, []);
+
+  const handleUnauthorizedAppApiError = useCallback((error: unknown) => {
+    if (!(error instanceof AppApiError) || error.status !== 401) {
+      return;
+    }
+
+    clearLocalState();
+    setSessionReady(true);
+    redirectToLoginWithReason(normalizeLogoutReason(error.code));
+  }, [clearLocalState, redirectToLoginWithReason]);
+
+  const authAwareApiRequest = useCallback(async <T,>(input: RequestInfo | URL, init: RequestInit = {}) => {
+    try {
+      return await apiRequest<T>(input, init);
+    } catch (error) {
+      handleUnauthorizedAppApiError(error);
+      throw error;
+    }
+  }, [handleUnauthorizedAppApiError]);
+
   const mergeAttendanceMonth = useCallback((response: AttendanceMonthResponse) => {
     setAttendanceMonthlySummaries(prev => ({
       ...prev,
@@ -246,21 +292,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loadAttendanceMonth = useCallback(async (year: number, month: number) => {
-    const response = await apiRequest<AttendanceMonthResponse>(
+    const response = await authAwareApiRequest<AttendanceMonthResponse>(
       `/api/attendance?yearMonth=${formatYearMonth(year, month)}`
     );
     if (response) {
       mergeAttendanceMonth(response);
     }
-  }, [mergeAttendanceMonth]);
+  }, [authAwareApiRequest, mergeAttendanceMonth]);
 
   const loadSnippets = useCallback(async () => {
-    const response = await apiRequest<SnippetResponse[]>("/api/snippets");
-    setSnippets((response || []).map(mapSnippet));
-  }, []);
+    const response = await authAwareApiRequest<SnippetResponse[]>("/api/snippets");
+    setSnippets(
+      (response || [])
+        .map(mapSnippet)
+        .sort((a, b) => compareApiDateTimesDesc(a.updatedAt, b.updatedAt))
+    );
+  }, [authAwareApiRequest]);
 
   const refreshSession = useCallback(async () => {
-    const session = await apiRequest<SessionResponse>("/api/auth/session");
+    let session: SessionResponse | null;
+    try {
+      session = await apiRequest<SessionResponse>("/api/auth/session");
+    } catch (error) {
+      handleUnauthorizedAppApiError(error);
+      if (error instanceof AppApiError && error.status === 401) {
+        return;
+      }
+      throw error;
+    }
+
     if (!session) {
       clearLocalState();
       setSessionReady(true);
@@ -283,16 +343,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setRecoveryEmailStatus(session.recoveryEmailStatus || EMPTY_RECOVERY_EMAIL_STATUS);
     setSessionReady(true);
 
-    const now = new Date();
+    const now = getCurrentSeoulDateInfo();
     await Promise.allSettled([
-      loadAttendanceMonth(now.getFullYear(), now.getMonth()),
+      loadAttendanceMonth(now.year, now.monthIndex),
       loadSnippets(),
     ]);
-  }, [clearLocalState, loadAttendanceMonth, loadSnippets]);
+  }, [clearLocalState, handleUnauthorizedAppApiError, loadAttendanceMonth, loadSnippets]);
 
   const ensureCsrf = useCallback(async () => {
     if (!csrfRef.current) {
-      const session = await apiRequest<SessionResponse>("/api/auth/session");
+      const session = await authAwareApiRequest<SessionResponse>("/api/auth/session");
       if (session) {
         csrfRef.current = {
           headerName: session.csrf.headerName,
@@ -309,7 +369,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     return csrfRef.current;
-  }, []);
+  }, [authAwareApiRequest]);
 
   const requestWithCsrf = useCallback(async <T,>(
     url: string,
@@ -325,12 +385,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       headers["Content-Type"] = "application/json";
     }
 
-    return apiRequest<T>(url, {
+    return authAwareApiRequest<T>(url, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
     });
-  }, [ensureCsrf]);
+  }, [authAwareApiRequest, ensureCsrf]);
 
   const login = useCallback(async (username: string, password: string): Promise<LoginResult> => {
     try {
@@ -411,7 +471,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [requestWithCsrf]);
 
   const previewBulkFillPresentForTrainingDays = useCallback(async () => {
-    const response = await apiRequest<AttendanceBulkFillResult>("/api/attendance/bulk-fill/present/preview");
+    const response = await authAwareApiRequest<AttendanceBulkFillResult>("/api/attendance/bulk-fill/present/preview");
     if (!response) {
       throw new AppApiError({
         message: "빈 수업일 일괄 출석 미리보기를 불러오지 못했습니다.",
@@ -419,7 +479,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
     }
     return response;
-  }, []);
+  }, [authAwareApiRequest]);
 
   const getAttendanceForDate = useCallback((date: string) => {
     const record = attendanceRecords.find(item => item.date === date);
@@ -504,7 +564,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSnippets(prev =>
       prev
         .map(snippet => (snippet.id === id ? updated : snippet))
-        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        .sort((a, b) => compareApiDateTimesDesc(a.updatedAt, b.updatedAt))
     );
   }, [requestWithCsrf, snippets]);
 
@@ -536,9 +596,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [refreshSession, requestWithCsrf]);
 
   const loadTrainingProfile = useCallback(async () => {
-    const response = await apiRequest<TrainingProfileSettings>("/api/settings/training-profile");
+    const response = await authAwareApiRequest<TrainingProfileSettings>("/api/settings/training-profile");
     setTrainingProfile(response);
-  }, []);
+  }, [authAwareApiRequest]);
 
   const updateTrainingProfile = useCallback(async (profile: TrainingProfileDraft) => {
     const response = await requestWithCsrf<TrainingProfileSettings>("/api/settings/training-profile", "PUT", profile);
@@ -548,20 +608,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setAttendanceMonthlySummaries({});
     setAttendanceAllowanceSummaries({});
     setAttendanceTrainingSummaries({});
-    const now = new Date();
-    await loadAttendanceMonth(now.getFullYear(), now.getMonth());
+    const now = getCurrentSeoulDateInfo();
+    await loadAttendanceMonth(now.year, now.monthIndex);
   }, [loadAttendanceMonth, requestWithCsrf]);
 
   const clearTrainingProfile = useCallback(async () => {
     await requestWithCsrf("/api/settings/training-profile", "DELETE");
-    const response = await apiRequest<TrainingProfileSettings>("/api/settings/training-profile");
+    const response = await authAwareApiRequest<TrainingProfileSettings>("/api/settings/training-profile");
     setTrainingProfile(response);
     setAttendanceMonthlySummaries({});
     setAttendanceAllowanceSummaries({});
     setAttendanceTrainingSummaries({});
-    const now = new Date();
-    await loadAttendanceMonth(now.getFullYear(), now.getMonth());
-  }, [loadAttendanceMonth, requestWithCsrf]);
+    const now = getCurrentSeoulDateInfo();
+    await loadAttendanceMonth(now.year, now.monthIndex);
+  }, [authAwareApiRequest, loadAttendanceMonth, requestWithCsrf]);
 
   const updateRecoveryEmail = useCallback(async (email: string, currentPassword: string) => {
     await requestWithCsrf("/api/settings/recovery-email", "POST", {

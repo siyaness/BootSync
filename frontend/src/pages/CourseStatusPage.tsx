@@ -7,6 +7,7 @@ import {
   formatCourseCountdown,
 } from '@/lib/attendance-insights';
 import { formatKRW } from '@/lib/display';
+import { getCurrentSeoulDateInfo } from '@/lib/seoul-time';
 import { useApp } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import {
@@ -138,9 +139,9 @@ function getDefaultAllowanceSummary(year: number, month: number): AllowanceSumma
 }
 
 export default function CourseStatusPage() {
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth();
+  const today = getCurrentSeoulDateInfo();
+  const currentYear = today.year;
+  const currentMonth = today.monthIndex;
   const {
     trainingProfile,
     getAttendanceSummaryForMonth,

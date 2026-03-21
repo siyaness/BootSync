@@ -1,6 +1,7 @@
 package com.bootsync.api;
 
 import com.bootsync.auth.dto.SignupRequest;
+import com.bootsync.config.ActiveMemberSessionFilter;
 import com.bootsync.config.AuthRateLimitService;
 import com.bootsync.config.ClientIpResolver;
 import com.bootsync.member.service.MemberSignupService;
@@ -132,6 +133,7 @@ public class ApiAuthController {
     private void establishSession(Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
         request.getSession(true);
         request.changeSessionId();
+        request.getSession(false).setAttribute(ActiveMemberSessionFilter.ACTIVE_MEMBER_REVALIDATION_MARKER, Boolean.TRUE);
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);

@@ -1,6 +1,7 @@
 package com.bootsync.api;
 
 import com.bootsync.auth.dto.RecoveryEmailChangeRequest;
+import com.bootsync.config.ActiveMemberSessionFilter;
 import com.bootsync.config.AuthRateLimitService;
 import com.bootsync.config.ClientIpResolver;
 import com.bootsync.member.entity.Member;
@@ -162,6 +163,9 @@ public class ApiSettingsController {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(refreshedAuthentication);
         SecurityContextHolder.setContext(context);
+        if (request.getSession(false) != null) {
+            request.getSession(false).setAttribute(ActiveMemberSessionFilter.ACTIVE_MEMBER_REVALIDATION_MARKER, Boolean.TRUE);
+        }
         securityContextRepository.saveContext(context, request, response);
     }
 }

@@ -25,6 +25,9 @@ export default function LoginPage() {
     if (reason === 'logged_out') return { type: 'info', message: '로그아웃되었습니다.' };
     if (reason === 'session_expired') return { type: 'warning', message: '세션이 만료되어 자동으로 로그아웃되었습니다. 다시 로그인해 주세요.' };
     if (reason === 'pending_delete') return { type: 'info', message: '계정 삭제 요청이 접수되어 현재 세션이 종료되었습니다.' };
+    if (reason === 'inactive_account' || searchParams.has('inactive')) {
+      return { type: 'error', message: '비활성화된 계정입니다. 관리자에게 문의하세요.' };
+    }
     return null;
   });
 

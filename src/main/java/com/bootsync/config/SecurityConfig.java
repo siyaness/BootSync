@@ -75,6 +75,12 @@ public class SecurityConfig {
                 .loginPage("/app/login")
                 .loginProcessingUrl("/auth/login")
                 .successHandler((request, response, authentication) -> {
+                    if (request.getSession(false) != null) {
+                        request.getSession(false).setAttribute(
+                            ActiveMemberSessionFilter.ACTIVE_MEMBER_REVALIDATION_MARKER,
+                            Boolean.TRUE
+                        );
+                    }
                     authRateLimitService.clearLoginFailures(authentication.getName());
                     successHandler.onAuthenticationSuccess(request, response, authentication);
                 })
