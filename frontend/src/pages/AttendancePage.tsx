@@ -3,6 +3,16 @@ import { AppApiError, apiRequest } from '@/lib/api';
 import { useApp } from '@/lib/store';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import {
+  formatDateString,
+  formatYearMonth,
+  getCurrentSeoulDateInfo,
+  getDayOfWeek,
+  getDayOfWeekFromDateString,
+  getDaysInMonth,
+  getMonthStartDayOfWeek,
+  parseDateOnly,
+} from '@/lib/seoul-time';
 import type { AttendanceBulkFillResult, AttendanceStatus, TrainingDayCode, TrainingProfileSettings } from '@/lib/app-types';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -31,6 +41,7 @@ const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 type CalendarDay = {
   date: number;
   dateStr: string;
+  dayOfWeek: number | null;
   isCurrentMonth: boolean;
   isToday: boolean;
   isFuture: boolean;
@@ -46,14 +57,6 @@ const TRAINING_DAY_BY_INDEX: TrainingDayCode[] = [
   'FRIDAY',
   'SATURDAY',
 ];
-
-function formatDateString(year: number, month: number, date: number) {
-  return `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
-}
-
-function formatYearMonth(year: number, month: number) {
-  return `${year}-${String(month + 1).padStart(2, '0')}`;
-}
 
 function parseYearMonthParam(yearMonth: string | null, fallbackYear: number, fallbackMonth: number) {
   if (!yearMonth) {
@@ -79,12 +82,12 @@ function parseYearMonthParam(yearMonth: string | null, fallbackYear: number, fal
 }
 
 function readDateParts(dateStr: string) {
-  const [year, month, date] = dateStr.split('-').map(Number);
+  const { year, month, day } = parseDateOnly(dateStr);
   return {
     year,
     month,
-    date,
-    dayOfWeek: new Date(year, month - 1, date).getDay(),
+    date: day,
+    dayOfWeek: getDayOfWeekFromDateString(dateStr),
   };
 }
 
@@ -174,10 +177,10 @@ export default function AttendancePage() {
   } = useApp();
   const isMobile = useIsMobile();
 
-  const today = new Date();
-  const todayYear = today.getFullYear();
-  const todayMonth = today.getMonth();
-  const todayDate = today.getDate();
+  const today = getCurrentSeoulDateInfo();
+  const todayYear = today.year;
+  const todayMonth = today.monthIndex;
+  const todayStr = today.dateString;
   const initialMonthView = parseYearMonthParam(searchParams.get('yearMonth'), todayYear, todayMonth);
   const initialEditId = searchParams.get('editId')?.trim() || null;
 
@@ -211,37 +214,54 @@ export default function AttendancePage() {
     ? (selectedDate ? 'self-start min-h-[620px]' : 'self-start min-h-[360px]')
     : '';
   const currentYearMonth = formatYearMonth(currentYear, currentMonth);
-  const defaultYearMonth = formatYearMonth(todayYear, todayMonth);
+  const defaultYearMonth = today.yearMonth;
 
   const calendarDays = useMemo(() => {
-    const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
-    const startPad = firstDay.getDay();
+    const startPad = getMonthStartDayOfWeek(currentYear, currentMonth);
+    const totalDaysInMonth = getDaysInMonth(currentYear, currentMonth);
     const totalCalendarCells = 42;
     const days: CalendarDay[] = [];
 
     for (let index = 0; index < startPad; index++) {
-      days.push({ date: 0, dateStr: '', isCurrentMonth: false, isToday: false, isFuture: false, isWeekend: false });
+      days.push({
+        date: 0,
+        dateStr: '',
+        dayOfWeek: null,
+        isCurrentMonth: false,
+        isToday: false,
+        isFuture: false,
+        isWeekend: false,
+      });
     }
 
-    for (let date = 1; date <= lastDay.getDate(); date++) {
-      const currentDate = new Date(currentYear, currentMonth, date);
+    for (let date = 1; date <= totalDaysInMonth; date++) {
+      const dateStr = formatDateString(currentYear, currentMonth, date);
+      const dayOfWeek = getDayOfWeek(currentYear, currentMonth, date);
       days.push({
         date,
-        dateStr: formatDateString(currentYear, currentMonth, date),
+        dateStr,
+        dayOfWeek,
         isCurrentMonth: true,
-        isToday: currentYear === todayYear && currentMonth === todayMonth && date === todayDate,
-        isFuture: currentDate > today,
-        isWeekend: currentDate.getDay() === 0 || currentDate.getDay() === 6,
+        isToday: dateStr === todayStr,
+        isFuture: dateStr > todayStr,
+        isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
       });
     }
 
     while (days.length < totalCalendarCells) {
-      days.push({ date: 0, dateStr: '', isCurrentMonth: false, isToday: false, isFuture: false, isWeekend: false });
+      days.push({
+        date: 0,
+        dateStr: '',
+        dayOfWeek: null,
+        isCurrentMonth: false,
+        isToday: false,
+        isFuture: false,
+        isWeekend: false,
+      });
     }
 
     return days;
-  }, [currentMonth, currentYear, today, todayDate, todayMonth, todayYear]);
+  }, [currentMonth, currentYear, todayStr]);
 
   const monthSummary = getAttendanceSummaryForMonth(currentYear, currentMonth);
   const summary = monthSummary ?? {
@@ -1053,7 +1073,7 @@ export default function AttendancePage() {
                     className={cn(
                       'text-sm',
                       day.isToday ? 'font-bold text-[#3D7A8A]' : 'text-[#1E2A3A]',
-                      day.isWeekend && new Date(currentYear, currentMonth, day.date).getDay() === 0 && 'text-[#B91C1C]'
+                      day.isWeekend && day.dayOfWeek === 0 && 'text-[#B91C1C]'
                     )}
                   >
                     {day.date}

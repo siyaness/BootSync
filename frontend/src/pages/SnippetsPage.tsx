@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '@/lib/store';
 import { getAllTags, getRelativeTime } from '@/lib/display';
+import { compareApiDateTimesDesc } from '@/lib/seoul-time';
 import { Search, Plus, Code2, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -33,9 +34,7 @@ export default function SnippetsPage() {
 
   const filtered = useMemo(() => {
     const normalizedQuery = searchQuery.trim();
-    let items = [...snippets].sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    );
+    let items = [...snippets].sort((a, b) => compareApiDateTimesDesc(a.updatedAt, b.updatedAt));
 
     if (selectedTag) {
       items = items.filter(s => s.tags.includes(selectedTag));

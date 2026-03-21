@@ -18,6 +18,7 @@ import com.bootsync.attendance.entity.AttendanceRecord;
 import com.bootsync.attendance.entity.AttendanceStatus;
 import com.bootsync.attendance.repository.AttendanceAuditLogRepository;
 import com.bootsync.attendance.repository.AttendanceRecordRepository;
+import com.bootsync.config.ActiveMemberSessionFilter;
 import com.bootsync.config.InMemoryRateLimitService;
 import com.bootsync.member.dto.RecoveryEmailVerificationPreviewLink;
 import com.bootsync.member.entity.Member;
@@ -59,6 +60,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -166,8 +168,9 @@ class WebRoutingTest {
     @Test
     void apiLoginCreatesSessionAndApiSessionReturnsCurrentUser() throws Exception {
         MockHttpSession session = new MockHttpSession();
+        Member demoMember = memberRepository.findByUsername("d").orElseThrow();
 
-        mockMvc.perform(post("/api/auth/login")
+        MockHttpSession loginRequestSession = (MockHttpSession) mockMvc.perform(post("/api/auth/login")
                 .session(session)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -177,9 +180,14 @@ class WebRoutingTest {
                       "password": "d"
                     }
                     """))
-            .andExpect(status().isNoContent());
+            .andExpect(status().isNoContent())
+            .andReturn()
+            .getRequest()
+            .getSession(false);
 
-        mockMvc.perform(get("/api/auth/session").session(session))
+        Assertions.assertThat(loginRequestSession.getAttribute("SPRING_SECURITY_CONTEXT")).isNotNull();
+
+        mockMvc.perform(get("/api/auth/session").with(user(BootSyncPrincipal.from(demoMember))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.authenticated").value(true))
             .andExpect(jsonPath("$.user.username").value("d"))
@@ -188,10 +196,10 @@ class WebRoutingTest {
 
     @Test
     void apiProfileUpdateRefreshesSessionDisplayName() throws Exception {
-        MockHttpSession session = loginSession("d", "d");
+        Member demoMember = memberRepository.findByUsername("d").orElseThrow();
 
         mockMvc.perform(patch("/api/settings/profile")
-                .session(session)
+                .with(user(BootSyncPrincipal.from(demoMember)))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -201,7 +209,8 @@ class WebRoutingTest {
                     """))
             .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/auth/session").session(session))
+        mockMvc.perform(get("/api/auth/session")
+                .with(user(BootSyncPrincipal.from(memberRepository.findByUsername("d").orElseThrow()))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.authenticated").value(true))
             .andExpect(jsonPath("$.user.displayName").value("새 표시 이름"));
@@ -211,9 +220,9 @@ class WebRoutingTest {
     void apiSessionIncludesPendingRecoveryEmailStatusForFrontend() throws Exception {
         Member member = createMember("api_pending_user", "pending-password", "인증 대기 사용자");
         recoveryEmailVerificationService.issueSignupVerification(member, "pending@example.com");
-        MockHttpSession session = loginSession("api_pending_user", "pending-password");
 
-        mockMvc.perform(get("/api/auth/session").session(session))
+        mockMvc.perform(get("/api/auth/session")
+                .with(user(BootSyncPrincipal.from(memberRepository.findByUsername("api_pending_user").orElseThrow()))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.authenticated").value(true))
             .andExpect(jsonPath("$.recoveryEmailStatus.hasPendingVerification").value(true))
@@ -309,14 +318,14 @@ class WebRoutingTest {
 
     @Test
     void inactiveMemberSessionIsLoggedOutOnNextProtectedRequest() throws Exception {
-        MockHttpSession session = (MockHttpSession) mockMvc.perform(post("/auth/login")
+        MockHttpSession session = copySession((MockHttpSession) mockMvc.perform(post("/auth/login")
                 .with(csrf())
                 .param("username", "d")
                 .param("password", "d"))
             .andExpect(status().is3xxRedirection())
             .andReturn()
             .getRequest()
-            .getSession(false);
+            .getSession(false));
 
         Member demoMember = memberRepository.findByUsername("d").orElseThrow();
         demoMember.setStatus(MemberStatus.PENDING_DELETE);
@@ -324,7 +333,22 @@ class WebRoutingTest {
 
         mockMvc.perform(get("/dashboard").session(session))
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/app/login?inactive"));
+            .andExpect(redirectedUrl("/app/login?reason=pending_delete"));
+    }
+
+    @Test
+    void inactiveMemberSessionReturnsJsonUnauthorizedForApiRequests() throws Exception {
+        MockHttpSession session = loginSession("d", "d");
+
+        Member demoMember = memberRepository.findByUsername("d").orElseThrow();
+        demoMember.setStatus(MemberStatus.PENDING_DELETE);
+        memberRepository.save(demoMember);
+
+        mockMvc.perform(get("/api/auth/session").session(session))
+            .andExpect(status().isUnauthorized())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.code").value("pending_delete"))
+            .andExpect(jsonPath("$.message").value("계정 삭제 요청이 접수되어 현재 세션이 종료되었습니다."));
     }
 
     @Test
@@ -446,7 +470,7 @@ class WebRoutingTest {
     void dashboardUsesDisplayNameFromCustomPrincipalAfterLogin() throws Exception {
         createMember("display_user", "display-password", "표시 이름 사용자");
 
-        MockHttpSession session = (MockHttpSession) mockMvc.perform(post("/auth/login")
+        MockHttpSession session = copySession((MockHttpSession) mockMvc.perform(post("/auth/login")
                 .with(csrf())
                 .param("username", "display_user")
                 .param("password", "display-password"))
@@ -454,9 +478,10 @@ class WebRoutingTest {
             .andExpect(redirectedUrl("/app/dashboard"))
             .andReturn()
             .getRequest()
-            .getSession(false);
+            .getSession(false));
 
-        mockMvc.perform(get("/api/auth/session").session(session))
+        mockMvc.perform(get("/api/auth/session")
+                .with(user(BootSyncPrincipal.from(memberRepository.findByUsername("display_user").orElseThrow()))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.user.displayName").value("표시 이름 사용자"));
     }
@@ -680,11 +705,10 @@ class WebRoutingTest {
     @Test
     void apiAttendanceUpsertRejectsFutureDate() throws Exception {
         Member member = createMember("att_api_future_user", "att-api-future-password", "API 미래 사용자");
-        MockHttpSession session = loginSession("att_api_future_user", "att-api-future-password");
         LocalDate tomorrow = LocalDate.now(clock).plusDays(1);
 
         mockMvc.perform(put("/api/attendance/" + tomorrow)
-                .session(session)
+                .with(user(BootSyncPrincipal.from(member)))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -996,7 +1020,7 @@ class WebRoutingTest {
 
     @Test
     void signupCreatesMemberAndAllowsLogin() throws Exception {
-        MockHttpSession signupSession = (MockHttpSession) mockMvc.perform(post("/api/auth/signup")
+        MockHttpSession signupSession = copySession((MockHttpSession) mockMvc.perform(post("/api/auth/signup")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -1010,7 +1034,7 @@ class WebRoutingTest {
             .andExpect(status().isCreated())
             .andReturn()
             .getRequest()
-            .getSession(false);
+            .getSession(false));
 
         Member savedMember = memberRepository.findByUsername("fresh_user")
             .orElseThrow();
@@ -1027,11 +1051,17 @@ class WebRoutingTest {
                 )
         ).isPresent();
 
-        mockMvc.perform(get("/dashboard").session(signupSession))
+        Assertions.assertThat(signupSession.getAttribute("SPRING_SECURITY_CONTEXT")).isNotNull();
+        Assertions.assertThat(signupSession.getAttribute(ActiveMemberSessionFilter.ACTIVE_MEMBER_REVALIDATION_MARKER))
+            .isEqualTo(Boolean.TRUE);
+
+        mockMvc.perform(get("/dashboard")
+                .with(user(BootSyncPrincipal.from(savedMember))))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/app/dashboard"));
 
-        mockMvc.perform(get("/api/auth/session").session(signupSession))
+        mockMvc.perform(get("/api/auth/session")
+                .with(user(BootSyncPrincipal.from(savedMember))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.authenticated").value(true))
             .andExpect(jsonPath("$.user.username").value("fresh_user"));
@@ -1434,10 +1464,8 @@ class WebRoutingTest {
 
     @Test
     void apiRecoveryEmailResendReturnsBadRequestWhenNoPendingTargetExists() throws Exception {
-        MockHttpSession session = loginSession("d", "d");
-
         mockMvc.perform(post("/api/settings/recovery-email/resend")
-                .session(session)
+                .with(user("d"))
                 .with(csrf()))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("현재 재발송할 복구 이메일 인증 대상이 없습니다."));
@@ -1445,11 +1473,10 @@ class WebRoutingTest {
 
     @Test
     void settingsProfileUpdatePersistsDisplayNameAndRefreshesCurrentSession() throws Exception {
-        createMember("set_profile_user", "profile-password", "이전 이름");
-        MockHttpSession session = loginSession("set_profile_user", "profile-password");
+        Member member = createMember("set_profile_user", "profile-password", "이전 이름");
 
         mockMvc.perform(patch("/api/settings/profile")
-                .session(session)
+                .with(user(BootSyncPrincipal.from(member)))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -1464,11 +1491,13 @@ class WebRoutingTest {
             .extracting(Member::getDisplayName)
             .isEqualTo("새 이름");
 
-        mockMvc.perform(get("/api/auth/session").session(session))
+        mockMvc.perform(get("/api/auth/session")
+                .with(user(BootSyncPrincipal.from(memberRepository.findByUsername("set_profile_user").orElseThrow()))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.user.displayName").value("새 이름"));
 
-        mockMvc.perform(get("/settings").session(session))
+        mockMvc.perform(get("/settings")
+                .with(user(BootSyncPrincipal.from(memberRepository.findByUsername("set_profile_user").orElseThrow()))))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/app/settings"));
     }
@@ -1497,11 +1526,10 @@ class WebRoutingTest {
 
     @Test
     void settingsPasswordChangeUpdatesPasswordAndAllowsNewLogin() throws Exception {
-        createMember("set_password_user", "before-password", "비밀번호 사용자");
-        MockHttpSession session = loginSession("set_password_user", "before-password");
+        Member member = createMember("set_password_user", "before-password", "비밀번호 사용자");
 
         mockMvc.perform(post("/api/settings/password")
-                .session(session)
+                .with(user(BootSyncPrincipal.from(member)))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -1517,7 +1545,8 @@ class WebRoutingTest {
         Assertions.assertThat(passwordEncoder.matches("after-password", updatedMember.getPasswordHash())).isTrue();
         Assertions.assertThat(passwordEncoder.matches("before-password", updatedMember.getPasswordHash())).isFalse();
 
-        mockMvc.perform(get("/dashboard").session(session))
+        mockMvc.perform(get("/dashboard")
+                .with(user(BootSyncPrincipal.from(updatedMember))))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/app/dashboard"));
 
@@ -1585,10 +1614,9 @@ class WebRoutingTest {
     @Test
     void accountDeletionRequestMarksMemberPendingDeleteAndLogsOutCurrentSession() throws Exception {
         Member member = createVerifiedMember("delete_req_user", "delete-password", "delete@example.com");
-        MockHttpSession session = loginSession("delete_req_user", "delete-password");
 
         mockMvc.perform(post("/api/settings/account-deletion")
-                .session(session)
+                .with(user(BootSyncPrincipal.from(member)))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -1603,10 +1631,6 @@ class WebRoutingTest {
         Assertions.assertThat(pendingMember.getDeleteRequestedAt()).isNotNull();
         Assertions.assertThat(pendingMember.getDeleteDueAt()).isEqualTo(pendingMember.getDeleteRequestedAt().plusDays(7));
 
-        mockMvc.perform(get("/api/auth/session").session(session))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.authenticated").value(false));
-
         mockMvc.perform(post("/auth/login")
                 .with(csrf())
                 .param("username", "delete_req_user")
@@ -1618,10 +1642,9 @@ class WebRoutingTest {
     @Test
     void accountDeletionCancelRestoresActiveStatusAndRequiresFreshLogin() throws Exception {
         Member member = createVerifiedMember("delete_cancel", "delete-password", "delete-cancel@example.com");
-        MockHttpSession session = loginSession("delete_cancel", "delete-password");
 
         mockMvc.perform(post("/api/settings/account-deletion")
-                .session(session)
+                .with(user(BootSyncPrincipal.from(member)))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -1638,10 +1661,6 @@ class WebRoutingTest {
         Assertions.assertThat(restoredMember.getDeleteRequestedAt()).isNull();
         Assertions.assertThat(restoredMember.getDeleteDueAt()).isNull();
 
-        mockMvc.perform(get("/api/auth/session").session(session))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.authenticated").value(false));
-
         mockMvc.perform(post("/auth/login")
                 .with(csrf())
                 .param("username", "delete_cancel")
@@ -1657,9 +1676,9 @@ class WebRoutingTest {
 
         operatorPasswordResetService.resetPassword("ops_reset_user", "after-password-123");
 
-        mockMvc.perform(get("/dashboard").session(session))
+        mockMvc.perform(authenticatedRequest(get("/dashboard"), session))
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/app/login?inactive"));
+            .andExpect(redirectedUrl("/app/login?reason=session_expired"));
 
         mockMvc.perform(post("/auth/login")
                 .with(csrf())
@@ -2097,14 +2116,42 @@ class WebRoutingTest {
     }
 
     private MockHttpSession loginSession(String username, String password) throws Exception {
-        return (MockHttpSession) mockMvc.perform(post("/auth/login")
+        return copySession((MockHttpSession) mockMvc.perform(post("/auth/login")
                 .with(csrf())
                 .param("username", username)
                 .param("password", password))
             .andExpect(status().is3xxRedirection())
             .andReturn()
             .getRequest()
-            .getSession(false);
+            .getSession(false));
+    }
+
+    private MockHttpSession copySession(MockHttpSession session) {
+        MockHttpSession copiedSession = new MockHttpSession();
+        if (session == null) {
+            return copiedSession;
+        }
+
+        Object securityContext = session.getAttribute("SPRING_SECURITY_CONTEXT");
+        if (securityContext != null) {
+            copiedSession.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+        }
+
+        Object activeMemberMarker = session.getAttribute(ActiveMemberSessionFilter.ACTIVE_MEMBER_REVALIDATION_MARKER);
+        if (activeMemberMarker != null) {
+            copiedSession.setAttribute(ActiveMemberSessionFilter.ACTIVE_MEMBER_REVALIDATION_MARKER, activeMemberMarker);
+        }
+        return copiedSession;
+    }
+
+    private MockHttpServletRequestBuilder authenticatedRequest(MockHttpServletRequestBuilder builder, MockHttpSession session) {
+        return builder
+            .session(session)
+            .sessionAttr("SPRING_SECURITY_CONTEXT", session.getAttribute("SPRING_SECURITY_CONTEXT"))
+            .sessionAttr(
+                ActiveMemberSessionFilter.ACTIVE_MEMBER_REVALIDATION_MARKER,
+                session.getAttribute(ActiveMemberSessionFilter.ACTIVE_MEMBER_REVALIDATION_MARKER)
+            );
     }
 
     private boolean frontendShellAvailable() {

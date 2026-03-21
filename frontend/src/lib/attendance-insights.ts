@@ -1,4 +1,5 @@
 import type { AttendanceMonthlySummary, TrainingSummary } from "@/lib/app-types";
+import { getCurrentSeoulDateInfo, getDateDiffInDays } from "@/lib/seoul-time";
 
 export type DashboardRiskTone = "good" | "warning" | "critical";
 
@@ -7,12 +8,6 @@ export interface DashboardRiskItem {
   tone: DashboardRiskTone;
   title: string;
   description: string;
-}
-
-const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
-
-function normalizeDate(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function getProgressWarning(label: "지각" | "조퇴", count: number): DashboardRiskItem {
@@ -45,9 +40,7 @@ function getProgressWarning(label: "지각" | "조퇴", count: number): Dashboar
 }
 
 export function getDaysUntilCourseEnd(courseEndDate: string, now = new Date()) {
-  const today = normalizeDate(now);
-  const target = normalizeDate(new Date(courseEndDate));
-  return Math.round((target.getTime() - today.getTime()) / MILLISECONDS_PER_DAY);
+  return getDateDiffInDays(courseEndDate, getCurrentSeoulDateInfo(now).dateString);
 }
 
 export function formatCourseCountdown(daysUntilCourseEnd: number) {
