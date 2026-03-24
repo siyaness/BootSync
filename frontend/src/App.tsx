@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AppProvider, useApp } from "@/lib/store";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -19,19 +19,30 @@ const AppLayout = lazy(() => import("@/components/layout/AppLayout"));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, sessionReady } = useApp();
+  const location = useLocation();
   if (!sessionReady) {
     return null;
   }
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    const nextPath = `${location.pathname}${location.search}`;
+    return <Navigate to={`/login?next=${encodeURIComponent(nextPath || "/")}`} replace />;
+  }
   return <>{children}</>;
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, sessionReady } = useApp();
+  const location = useLocation();
   if (!sessionReady) {
     return null;
   }
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) {
+    const nextPath = new URLSearchParams(location.search).get("next");
+    const safeNextPath = nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
+      ? nextPath
+      : "/dashboard";
+    return <Navigate to={safeNextPath} replace />;
+  }
   return <>{children}</>;
 }
 

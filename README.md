@@ -11,6 +11,7 @@ BootSync는 대한민국 국비지원 IT 교육과정 훈련생을 위한 출결
 
 - 세션 기반 인증, recovery email verification, rate limit, 계정 상태 재검사
 - 계정 상태 변경이나 비밀번호 변경으로 세션이 무효화되면 `/app` 화면은 로그인으로 되돌리고, `/api` 요청은 JSON `401`로 정리
+- 익명 사용자가 `/app/dashboard`, `/app/attendance`, `/app/snippets/...` 같은 보호 화면에 직접 접근하면 `/app/login`으로 이동하고, 로그인 후 원래 화면으로 복귀
 - 월별 출결 조회/수정/삭제, 과정 정보 기반 `빈 수업일 일괄 출석`
 - `1일 지급액 × 지급 반영 일수` 기준 예상 장려금 계산
 - Markdown 기반 학습 노트와 태그 검색, secret warning 저장 흐름

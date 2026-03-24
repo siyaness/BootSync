@@ -232,8 +232,15 @@ class WebRoutingTest {
     }
 
     @Test
-    void appFrontendShellIsPublic() throws Exception {
-        ResultActions result = mockMvc.perform(get("/app"));
+    void appFrontendRootRedirectsAnonymousUsersToAppLoginWithNext() throws Exception {
+        mockMvc.perform(get("/app"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/app/login?next=%2F"));
+    }
+
+    @Test
+    void appFrontendRootForwardsToFrontendShellForAuthenticatedUser() throws Exception {
+        ResultActions result = mockMvc.perform(get("/app").with(user("d")));
         if (frontendShellAvailable()) {
             result.andExpect(status().isOk())
                 .andExpect(forwardedUrl("/app/index.html"));
@@ -244,8 +251,15 @@ class WebRoutingTest {
     }
 
     @Test
-    void appFrontendChildRouteForwardsToFrontendShell() throws Exception {
-        ResultActions result = mockMvc.perform(get("/app/dashboard"));
+    void appFrontendProtectedChildRouteRedirectsAnonymousUsersToAppLoginWithNext() throws Exception {
+        mockMvc.perform(get("/app/dashboard"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/app/login?next=%2Fdashboard"));
+    }
+
+    @Test
+    void appFrontendChildRouteForwardsToFrontendShellForAuthenticatedUser() throws Exception {
+        ResultActions result = mockMvc.perform(get("/app/dashboard").with(user("d")));
         if (frontendShellAvailable()) {
             result.andExpect(status().isOk())
                 .andExpect(forwardedUrl("/app/index.html"));
@@ -256,15 +270,12 @@ class WebRoutingTest {
     }
 
     @Test
-    void appFrontendCourseStatusRouteForwardsToFrontendShell() throws Exception {
-        ResultActions result = mockMvc.perform(get("/app/course-status"));
-        if (frontendShellAvailable()) {
-            result.andExpect(status().isOk())
-                .andExpect(forwardedUrl("/app/index.html"));
-            return;
-        }
-        result.andExpect(status().isOk())
-            .andExpect(content().string(org.hamcrest.Matchers.containsString("최신 프론트 빌드가 필요합니다")));
+    void appFrontendProtectedRoutePreservesQueryStringInLoginRedirect() throws Exception {
+        mockMvc.perform(get("/app/attendance")
+                .param("yearMonth", "2026-03")
+                .param("editId", "42"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/app/login?next=%2Fattendance%3FyearMonth%3D2026-03%26editId%3D42"));
     }
 
     @Test

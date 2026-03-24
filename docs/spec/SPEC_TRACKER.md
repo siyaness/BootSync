@@ -14,7 +14,7 @@
 | 회원가입 후 자동 로그인 | DONE | 가입 직후 대시보드 이동 |
 | `ACTIVE` 계정만 로그인 허용 | DONE | 비활성 상태는 로그인 차단 |
 | 보호 요청 시 계정 상태 재검사 | DONE | `PENDING_DELETE`/`DISABLED`/비밀번호 변경 후 기존 세션을 정리하고, `/app`은 로그인 리다이렉트, `/api`는 JSON `401`로 응답 |
-| 원래 요청한 보호 화면 복귀 | DONE | saved request 기반 |
+| 원래 요청한 보호 화면 복귀 | DONE | saved request + React `/app` direct-entry `next` 복귀 동선 확인 |
 | custom principal에 `memberId`, `username`, `displayName` 포함 | DONE | `BootSyncPrincipal` 사용 |
 | 세션 고정 공격 방지 | DONE | session fixation migrate 설정 |
 | rate limit용 클라이언트 IP 신뢰 경계 | DONE | 기본은 `remoteAddr`, 운영에서만 forwarded header opt-in |
