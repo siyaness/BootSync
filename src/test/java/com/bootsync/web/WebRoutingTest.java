@@ -168,7 +168,6 @@ class WebRoutingTest {
     @Test
     void apiLoginCreatesSessionAndApiSessionReturnsCurrentUser() throws Exception {
         MockHttpSession session = new MockHttpSession();
-        Member demoMember = memberRepository.findByUsername("d").orElseThrow();
 
         MockHttpSession loginRequestSession = (MockHttpSession) mockMvc.perform(post("/api/auth/login")
                 .session(session)
@@ -187,7 +186,7 @@ class WebRoutingTest {
 
         Assertions.assertThat(loginRequestSession.getAttribute("SPRING_SECURITY_CONTEXT")).isNotNull();
 
-        mockMvc.perform(get("/api/auth/session").with(user(BootSyncPrincipal.from(demoMember))))
+        mockMvc.perform(get("/api/auth/session").session(loginRequestSession))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.authenticated").value(true))
             .andExpect(jsonPath("$.user.username").value("d"))
@@ -1072,7 +1071,7 @@ class WebRoutingTest {
             .andExpect(redirectedUrl("/app/dashboard"));
 
         mockMvc.perform(get("/api/auth/session")
-                .with(user(BootSyncPrincipal.from(savedMember))))
+                .session(signupSession))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.authenticated").value(true))
             .andExpect(jsonPath("$.user.username").value("fresh_user"));
@@ -1484,10 +1483,11 @@ class WebRoutingTest {
 
     @Test
     void settingsProfileUpdatePersistsDisplayNameAndRefreshesCurrentSession() throws Exception {
-        Member member = createMember("set_profile_user", "profile-password", "이전 이름");
+        createMember("set_profile_user", "profile-password", "이전 이름");
+        MockHttpSession session = loginSession("set_profile_user", "profile-password");
 
         mockMvc.perform(patch("/api/settings/profile")
-                .with(user(BootSyncPrincipal.from(member)))
+                .session(session)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -1503,12 +1503,13 @@ class WebRoutingTest {
             .isEqualTo("새 이름");
 
         mockMvc.perform(get("/api/auth/session")
-                .with(user(BootSyncPrincipal.from(memberRepository.findByUsername("set_profile_user").orElseThrow()))))
+                .session(session))
             .andExpect(status().isOk())
+            .andExpect(jsonPath("$.authenticated").value(true))
             .andExpect(jsonPath("$.user.displayName").value("새 이름"));
 
         mockMvc.perform(get("/settings")
-                .with(user(BootSyncPrincipal.from(memberRepository.findByUsername("set_profile_user").orElseThrow()))))
+                .session(session))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/app/settings"));
     }
@@ -1537,10 +1538,11 @@ class WebRoutingTest {
 
     @Test
     void settingsPasswordChangeUpdatesPasswordAndAllowsNewLogin() throws Exception {
-        Member member = createMember("set_password_user", "before-password", "비밀번호 사용자");
+        createMember("set_password_user", "before-password", "비밀번호 사용자");
+        MockHttpSession session = loginSession("set_password_user", "before-password");
 
         mockMvc.perform(post("/api/settings/password")
-                .with(user(BootSyncPrincipal.from(member)))
+                .session(session)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -1556,8 +1558,12 @@ class WebRoutingTest {
         Assertions.assertThat(passwordEncoder.matches("after-password", updatedMember.getPasswordHash())).isTrue();
         Assertions.assertThat(passwordEncoder.matches("before-password", updatedMember.getPasswordHash())).isFalse();
 
-        mockMvc.perform(get("/dashboard")
-                .with(user(BootSyncPrincipal.from(updatedMember))))
+        mockMvc.perform(get("/api/auth/session").session(session))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.authenticated").value(true))
+            .andExpect(jsonPath("$.user.username").value("set_password_user"));
+
+        mockMvc.perform(get("/dashboard").session(session))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/app/dashboard"));
 
@@ -1625,9 +1631,10 @@ class WebRoutingTest {
     @Test
     void accountDeletionRequestMarksMemberPendingDeleteAndLogsOutCurrentSession() throws Exception {
         Member member = createVerifiedMember("delete_req_user", "delete-password", "delete@example.com");
+        MockHttpSession session = loginSession("delete_req_user", "delete-password");
 
         mockMvc.perform(post("/api/settings/account-deletion")
-                .with(user(BootSyncPrincipal.from(member)))
+                .session(session)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -1641,6 +1648,10 @@ class WebRoutingTest {
         Assertions.assertThat(pendingMember.getStatus()).isEqualTo(MemberStatus.PENDING_DELETE);
         Assertions.assertThat(pendingMember.getDeleteRequestedAt()).isNotNull();
         Assertions.assertThat(pendingMember.getDeleteDueAt()).isEqualTo(pendingMember.getDeleteRequestedAt().plusDays(7));
+
+        mockMvc.perform(get("/api/auth/session").session(session))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.authenticated").value(false));
 
         mockMvc.perform(post("/auth/login")
                 .with(csrf())

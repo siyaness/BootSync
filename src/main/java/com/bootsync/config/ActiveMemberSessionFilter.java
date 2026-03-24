@@ -85,21 +85,22 @@ public class ActiveMemberSessionFilter extends OncePerRequestFilter {
         if (!(principal instanceof BootSyncPrincipal bootSyncPrincipal)) {
             return null;
         }
+        Member member = memberRepository.findById(bootSyncPrincipal.memberId())
+            .orElse(null);
 
-        return memberRepository.findById(bootSyncPrincipal.memberId())
-            .map(member -> {
-                if (member.getStatus() == MemberStatus.PENDING_DELETE) {
-                    return new SessionInvalidation("pending_delete", "계정 삭제 요청이 접수되어 현재 세션이 종료되었습니다.");
-                }
-                if (member.getStatus() != MemberStatus.ACTIVE) {
-                    return new SessionInvalidation("inactive_account", "비활성화된 계정은 다시 로그인할 수 없습니다.");
-                }
-                if (!credentialsCurrent(authentication, member)) {
-                    return new SessionInvalidation("session_expired", "보안을 위해 다시 로그인해 주세요.");
-                }
-                return null;
-            })
-            .orElse(new SessionInvalidation("session_expired", "회원 상태를 다시 확인하는 중 세션이 종료되었습니다."));
+        if (member == null) {
+            return new SessionInvalidation("session_expired", "회원 상태를 다시 확인하는 중 세션이 종료되었습니다.");
+        }
+        if (member.getStatus() == MemberStatus.PENDING_DELETE) {
+            return new SessionInvalidation("pending_delete", "계정 삭제 요청이 접수되어 현재 세션이 종료되었습니다.");
+        }
+        if (member.getStatus() != MemberStatus.ACTIVE) {
+            return new SessionInvalidation("inactive_account", "비활성화된 계정은 다시 로그인할 수 없습니다.");
+        }
+        if (!credentialsCurrent(authentication, member)) {
+            return new SessionInvalidation("session_expired", "보안을 위해 다시 로그인해 주세요.");
+        }
+        return null;
     }
 
     private boolean credentialsCurrent(Authentication authentication, Member member) {
